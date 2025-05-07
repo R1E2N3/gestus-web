@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import LanguageSelector from '../LanguageSelector/page';
+import heroImg from '../../images/Hero.png';
 
 export default function Hero() {
   return (
@@ -10,11 +11,14 @@ export default function Hero() {
         <LanguageSelector />
       </div>
       <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center">
-        <div className="w-full max-w-md bg-white border-4 border-[var(--accent)] rounded-lg overflow-hidden shadow-xl">
-          <div className="aspect-video bg-gray-200 flex items-center justify-center">
-            {/* Placeholder for live video feed */}
-            <span className="text-gray-500">Vídeo aqui</span>
-          </div>
+        <div className="w-full max-w-md rounded-lg overflow-hidden shadow-xl">
+          <Image
+            src={heroImg}
+            alt="Hero Illustration"
+            width={500}
+            height={400}
+            className="object-cover"
+          />
         </div>
       </div>
     </section>

@@ -3,6 +3,9 @@
 import { useEffect } from 'react';
 import anime from 'animejs/lib/anime.es.js';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import Image from 'next/image';
+import heroImg from '../images/Hero.png'; 
+import logoImg from '../images/logo.png';
 
 const chartData = [
   { name: 'Fluent in Libras', value: 36 },
@@ -71,6 +74,18 @@ export default function About() {
           <li>💡 Real-time AI & computer vision feedback</li>
           <li>🎮 Gamification keeps learning exciting</li>
         </ul>
+      </div>
+      {/* Image Gallery Card */}
+      <div className="about-card bg-white/20 backdrop-blur-sm border border-[var(--accent)]/30 rounded-3xl p-6 shadow-md hover:scale-105 transition-transform">
+        <h2 className="text-2xl font-semibold accent mb-4">🖼️ Showcase</h2>
+        <div className="flex flex-wrap justify-center gap-6">
+          <div className="w-40 h-auto">
+            <Image src={heroImg} alt="Hero" className="rounded-lg" />
+          </div>
+          <div className="w-24 h-auto">
+            <Image src={logoImg} alt="Logo" className="rounded-full" />
+          </div>
+        </div>
       </div>
       {/* Call to Action */}
       <div className="text-center">

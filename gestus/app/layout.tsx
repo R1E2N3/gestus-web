@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import Logo from "./components/Logo/page";
+import Image from "next/image";
+import logoImg from "./images/logo.png";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="flex min-h-screen">
           {/* Sidebar */}
           <aside className="w-64 bg-white border-r border-gray-200 flex flex-col items-center py-10 px-4 gap-8 shadow-lg">
-            <Logo />
+            {/* Custom Logo */}
+            <div className="flex items-center space-x-2">
+              <Image src={logoImg} alt="Gestus Logo" width={48} height={48} className="h-12 w-12" />
+              <span className="text-2xl font-bold text-[var(--accent)]">GESTUS</span>
+            </div>
             <nav className="flex flex-col w-full gap-2 mt-8">
               {navLinks.map((link) => (
                 <Link

@@ -1,16 +1,33 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { CSSProperties } from "react"
 
 interface HandSymbolProps {
   size?: number
   animated?: boolean
   color?: string
+  className?: string
+  style?: CSSProperties
 }
 
-export default function HandSymbol({ size = 100, animated = true, color = "#ffd23f" }: HandSymbolProps) {
+export default function HandSymbol({ 
+  size = 100, 
+  animated = true, 
+  color = "#ffd23f", 
+  className = "",
+  style = {} 
+}: HandSymbolProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 100 100" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={style}
+    >
       {/* Palm */}
       <motion.circle
         cx="50"

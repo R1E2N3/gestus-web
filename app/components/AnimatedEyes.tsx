@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useState, useRef } from "react"
+import { motion, useAnimate } from "framer-motion"
 
 interface EyeProps {
   x: number
@@ -10,8 +10,15 @@ interface EyeProps {
   size?: number
 }
 
+interface PupilPosition {
+  x: number
+  y: number
+}
+
 const Eye = ({ x, y, delay, size = 30 }: EyeProps) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [scope, animate] = useAnimate()
+  const isAnimating = useRef(false)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -22,7 +29,9 @@ const Eye = ({ x, y, delay, size = 30 }: EyeProps) => {
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
-  const calculatePupilPosition = () => {
+  useEffect(() => {
+    if (isAnimating.current) return;
+    
     const eyeRect = { x, y, width: size, height: size }
     const dx = mousePosition.x - (eyeRect.x + eyeRect.width / 2)
     const dy = mousePosition.y - (eyeRect.y + eyeRect.height / 2)
@@ -30,12 +39,24 @@ const Eye = ({ x, y, delay, size = 30 }: EyeProps) => {
     const maxDistance = size / 4
     const normalizedDistance = Math.min(distance, maxDistance)
     const angle = Math.atan2(dy, dx)
-
-    return {
-      x: Math.cos(angle) * normalizedDistance,
-      y: Math.sin(angle) * normalizedDistance,
-    }
-  }
+    
+    const pupilX = Math.cos(angle) * normalizedDistance
+    const pupilY = Math.sin(angle) * normalizedDistance
+    
+    isAnimating.current = true
+    
+    animate(scope.current, { 
+      x: pupilX, 
+      y: pupilY 
+    }, { 
+      type: "spring", 
+      stiffness: 300, 
+      damping: 30,
+      onComplete: () => {
+        isAnimating.current = false
+      }
+    })
+  }, [mousePosition, x, y, size, animate, scope])
 
   return (
     <motion.div
@@ -50,10 +71,9 @@ const Eye = ({ x, y, delay, size = 30 }: EyeProps) => {
         style={{ width: size, height: size }}
       >
         <motion.div
+          ref={scope}
           className="rounded-full bg-[#009fe3]"
           style={{ width: size / 2.5, height: size / 2.5 }}
-          animate={calculatePupilPosition}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
       </div>
     </motion.div>

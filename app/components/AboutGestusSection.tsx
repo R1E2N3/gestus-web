@@ -176,7 +176,7 @@ export default function AboutGestusSection() {
                 {features.slice(0, 4).map((feature, index) => (
                   <div
                     key={feature.id}
-                    ref={(el) => (featureRefs.current[index] = el)}
+                    ref={(el) => { featureRefs.current[index] = el; }}
                     className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 opacity-0 translate-y-10"
                     style={{ transitionDelay: `${index * 100}ms` }}
                   >

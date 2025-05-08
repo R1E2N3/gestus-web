@@ -25,7 +25,7 @@ export default function About() {
 function HeroSection() {
   const controls = useAnimation()
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, threshold: 0.2 })
+  const inView = useInView(ref, { once: true, amount: 0.2 })
 
   useEffect(() => {
     if (inView) {
@@ -558,7 +558,15 @@ function StatisticsSection() {
 }
 
 // Counter Card Component
-function CounterCard({ icon, value, label, color, delay }) {
+interface CounterCardProps {
+  icon: string;
+  value: string;
+  label: string;
+  color: string;
+  delay: number;
+}
+
+function CounterCard({ icon, value, label, color, delay }: CounterCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

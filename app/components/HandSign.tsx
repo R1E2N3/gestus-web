@@ -1,19 +1,33 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { CSSProperties } from "react"
 
 interface HandSignProps {
   className?: string
   size?: number
   color?: string
   animated?: boolean
+  style?: CSSProperties
 }
 
-export default function HandSign({ className = "", size = 60, color = "#ffd23f", animated = true }: HandSignProps) {
+export default function HandSign({ 
+  className = "", 
+  size = 60, 
+  color = "#ffd23f", 
+  animated = true,
+  style = {}
+}: HandSignProps) {
+  const combinedStyle: CSSProperties = {
+    width: size,
+    height: size,
+    ...style
+  }
+
   return (
     <motion.div
       className={`relative ${className}`}
-      style={{ width: size, height: size }}
+      style={combinedStyle}
       whileHover={animated ? { rotate: [0, -10, 10, -5, 5, 0], scale: 1.1 } : {}}
       transition={{ duration: 0.5 }}
     >

@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Lexend } from "next/font/google"
 import "./globals.css"
+import { LanguageProvider } from "./contexts/LanguageContext"
 
 const lexend = Lexend({
   subsets: ["latin"],
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR">
       <head />
       <body className={`${lexend.variable} font-lexend antialiased bg-[var(--background)] text-[var(--foreground)]`}>
-        <main className="bg-[var(--background)] min-h-screen overflow-x-auto">{children}</main>
+        <LanguageProvider>
+          <main className="bg-[var(--background)] min-h-screen overflow-x-auto">{children}</main>
+        </LanguageProvider>
       </body>
     </html>
   )

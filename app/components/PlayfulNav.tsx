@@ -3,18 +3,30 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import HandSymbolSmall from "./HandSymbolSmall"
+import LanguageToggle from "./LanguageToggle"
+import { useTranslation } from "../hooks/useTranslation"
 
-const navLinks = [
-  { href: "/", label: "Home", emoji: "🏠" },
-  { href: "/our-solution", label: "Our Solution", emoji: "💡" },
-  { href: "/about", label: "About Us", emoji: "👋" },
-  { href: "/prototype", label: "Prototype", emoji: "🚀" },
+type NavLinkKey = "home" | "solution" | "about" | "prototype"
+
+interface NavLink {
+  href: string
+  key: NavLinkKey
+  emoji: string
+}
+
+const navLinks: NavLink[] = [
+  { href: "/", key: "home", emoji: "🏠" },
+  { href: "/our-solution", key: "solution", emoji: "💡" },
+  { href: "/about", key: "about", emoji: "👋" },
+  { href: "/prototype", key: "prototype", emoji: "🚀" },
 ]
 
 export default function PlayfulNav() {
   const [activeLink, setActiveLink] = useState("/")
   const [hoverLink, setHoverLink] = useState<string | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const t = useTranslation()
 
   useEffect(() => {
     setActiveLink(window.location.pathname)
@@ -27,13 +39,7 @@ export default function PlayfulNav() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <motion.div
-                whileHover={{ rotate: [0, -10, 10, -5, 5, 0] }}
-                transition={{ duration: 0.5 }}
-                className="w-10 h-10 rounded-full bg-[#ffd23f] flex items-center justify-center text-white font-bold text-xl"
-              >
-                G
-              </motion.div>
+              <HandSymbolSmall />
               <span className="ml-2 text-xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
                 Gestus
               </span>
@@ -62,7 +68,7 @@ export default function PlayfulNav() {
                 <span className="relative flex items-center">
                   <span className="mr-1">{link.emoji}</span>
                   <span className={`${activeLink === link.href ? "text-[#009fe3] font-semibold" : "text-gray-700"}`}>
-                    {link.label}
+                    {t.nav.links[link.key]}
                   </span>
                 </span>
               </Link>
@@ -98,6 +104,17 @@ export default function PlayfulNav() {
               </svg>
             </button>
           </div>
+
+          {/* Language Toggle and Try Now Button */}
+          <div className="flex items-center gap-4">
+            <LanguageToggle />
+            <a
+              href="/prototype"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors"
+            >
+              {t.nav.tryNow}
+            </a>
+          </div>
         </div>
       </div>
 
@@ -115,7 +132,7 @@ export default function PlayfulNav() {
               }`}
             >
               <span className="mr-2">{link.emoji}</span>
-              {link.label}
+              {t.nav.links[link.key]}
             </Link>
           ))}
         </div>

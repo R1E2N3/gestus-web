@@ -3,8 +3,12 @@
 import { useEffect, useRef } from "react"
 import PlayfulNav from "../components/PlayfulNav"
 import { motion, useAnimation, useInView } from "framer-motion"
+import { useTranslation } from "../hooks/useTranslation"
+import HandSymbol from "../components/HandSymbol"
 
 export default function OurSolution() {
+  const t = useTranslation()
+  
   return (
     <>
       <PlayfulNav />
@@ -23,6 +27,7 @@ function HeroSection() {
   const controls = useAnimation()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.2 })
+  const t = useTranslation()
 
   useEffect(() => {
     if (inView) {
@@ -58,20 +63,13 @@ function HeroSection() {
           className="text-center mb-12"
         >
           <span className="inline-block px-4 py-1 bg-[#ffd23f]/20 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
-            OUR SOLUTION
+            {t.solution.heading}
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Teaching sign language at{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">low cost</span>
-              <span className="absolute bottom-2 left-0 w-full h-4 bg-[#ffd23f]/30 -z-10 transform -rotate-1"></span>
-            </span>{" "}
-            using AI
+            {t.solution.title}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Gestus offers an AI-driven app that delivers immersive sign language lessons through the largest proprietary
-            database of signs. Our platform uses advanced AI to provide personalised, interactive, and engaging learning
-            experiences.
+            {t.solution.subtitle}
           </p>
         </motion.div>
 
@@ -89,15 +87,9 @@ function HeroSection() {
                 <HandSymbol size={180} animated={true} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold mb-4">AI-Powered Learning Platform</h2>
+                <h2 className="text-2xl font-bold mb-4">{t.solution.process.title}</h2>
                 <ul className="space-y-3">
-                  {[
-                    "Personalized learning paths",
-                    "Real-time feedback on gestures",
-                    "Interactive practice sessions",
-                    "Gamified learning experience",
-                    "Progress tracking and analytics",
-                  ].map((item, index) => (
+                  {t.solution.process.steps.map((step, index) => (
                     <motion.li
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
@@ -108,7 +100,7 @@ function HeroSection() {
                       <span className="w-6 h-6 rounded-full bg-[#009fe3] text-white flex items-center justify-center mr-3 flex-shrink-0">
                         ✓
                       </span>
-                      <span>{item}</span>
+                      <span>{step.title}</span>
                     </motion.li>
                   ))}
                 </ul>
@@ -127,25 +119,8 @@ function HeroSection() {
 
 // Key Differentiators Section
 function KeyDifferentiators() {
-  const cards = [
-    {
-      icon: "📊",
-
-      title: "Community-Driven Database",
-      description: "We certify people who are fluent in sign language to add to our proprietary database.",
-    },
-    {
-      icon: "🧠",
-      title: "AI-Driven Personalization",
-      description: "Tailors lessons to individual learning paces and styles, allowing citizens from all backgrounds to learn sign language.",
-    },
-    {
-      icon: "🎮",
-      title: "Immersive Learning",
-      description: "Interactive modules and real-time feedback to make learning fun and effective.",
-    },
-  ]
-
+  const t = useTranslation()
+  
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       {/* Background decorative elements */}
@@ -169,7 +144,7 @@ function KeyDifferentiators() {
             <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
               WHAT MAKES US DIFFERENT
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Why is Gestus special?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.solution.features.title}</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our unique approach to sign language education sets us apart from traditional methods.
             </p>
@@ -177,7 +152,7 @@ function KeyDifferentiators() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {cards.map((card, index) => (
+          {t.solution.features.items.map((feature, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
@@ -188,10 +163,10 @@ function KeyDifferentiators() {
               className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
             >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#ffd23f]/20 to-[#009fe3]/20 flex items-center justify-center text-3xl mb-6">
-                {card.icon}
+                {["📊", "🧠", "🎮", "🌟"][index]}
               </div>
-              <h3 className="text-xl font-bold mb-3">{card.title}</h3>
-              <p className="text-gray-600">{card.description}</p>
+              <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+              <p className="text-gray-600">{feature.description}</p>
             </motion.div>
           ))}
         </div>
@@ -202,6 +177,8 @@ function KeyDifferentiators() {
 
 // Target Demographic Section
 function TargetDemographic() {
+  const t = useTranslation()
+  
   return (
     <section className="py-20 bg-gradient-to-b from-white to-[#f0f9ff] relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -215,30 +192,24 @@ function TargetDemographic() {
             <span className="inline-block px-4 py-1 bg-[#ffd23f]/20 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
               WHO WE SERVE
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Target Demographic</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.solution.benefits.title}</h2>
 
-            <div className="space-y-6">
-              <div className="bg-white rounded-xl p-6 shadow-md">
-                <h3 className="text-xl font-bold mb-3 flex items-center">
-                  <span className="w-8 h-8 rounded-full bg-[#ffd23f] text-white flex items-center justify-center mr-3">
-                    1
+            <div className="space-y-4">
+              {t.solution.benefits.items.map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="flex items-start"
+                >
+                  <span className={`w-8 h-8 rounded-full ${index % 2 === 0 ? "bg-[#ffd23f]" : "bg-[#009fe3]"} text-white flex items-center justify-center mr-3 flex-shrink-0`}>
+                    {index + 1}
                   </span>
-                  Primary Users
-                </h3>
-                <p className="text-gray-600 ml-11">Hearing students from the Brazilian public school system.</p>
-              </div>
-
-              <div className="bg-white rounded-xl p-6 shadow-md">
-                <h3 className="text-xl font-bold mb-3 flex items-center">
-                  <span className="w-8 h-8 rounded-full bg-[#009fe3] text-white flex items-center justify-center mr-3">
-                    2
-                  </span>
-                  Secondary Users
-                </h3>
-                <p className="text-gray-600 ml-11">
-                  Deaf individuals learning sign language for the first time, parents of a deaf child, and educators.
-                </p>
-              </div>
+                  <p className="text-lg">{benefit}</p>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
 
@@ -301,59 +272,44 @@ function TargetDemographic() {
 
 // Market Positioning Section
 function MarketPositioning() {
+  const t = useTranslation()
+  
   return (
     <section className="py-20 bg-[#f0f9ff] relative overflow-hidden">
-      {/* Background decorative elements */}
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#ffd23f]/5 rounded-bl-full" />
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-[#009fe3]/5 rounded-tr-full" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             className="order-2 md:order-1"
           >
-            <div className="relative">
-              <div className="absolute -top-6 -right-6 w-12 h-12 bg-[#ffd23f] rounded-full" />
-              <div className="absolute -bottom-6 -left-6 w-12 h-12 bg-[#009fe3] rounded-full" />
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h3 className="text-xl font-bold mb-6">{t.solution.technology.title}</h3>
 
-              <div className="relative z-10 bg-white rounded-2xl shadow-xl p-8 overflow-hidden">
-                <h3 className="text-2xl font-bold mb-6 text-center">Market Comparison</h3>
-
-                <div className="space-y-8">
-                  <div>
+              <div className="space-y-6">
+                <p className="text-gray-600">{t.solution.technology.description}</p>
+                
+                {t.solution.technology.items.map((item, index) => (
+                  <div key={index}>
                     <div className="flex justify-between mb-2">
-                      <span className="font-medium">Traditional Methods</span>
-                      <span className="text-gray-500">Limited Reach (expensive and not accessible)</span>
+                      <span className="font-medium">{item.title}</span>
+                      <span className={index === 2 ? "text-[#ffd23f] font-bold" : "text-gray-500"}>
+                        {item.description}
+                      </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div className="bg-gray-400 h-3 rounded-full" style={{ width: "40%" }}></div>
+                      <div 
+                        className={`${index === 2 ? "bg-[#ffd23f]" : "bg-[#009fe3]"} h-3 rounded-full`} 
+                        style={{ width: `${index === 0 ? "50%" : index === 1 ? "65%" : "90%"}` }}
+                      ></div>
                     </div>
                   </div>
-
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="font-medium">Current Digital Solutions</span>
-                      <span className="text-gray-500">Moderate Impact (not engaging or hard to use)</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div className="bg-[#009fe3] h-3 rounded-full" style={{ width: "65%" }}></div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="font-medium">Gestus AI Platform</span>
-                      <span className="text-[#ffd23f] font-bold">High Impact</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div className="bg-[#ffd23f] h-3 rounded-full" style={{ width: "90%" }}></div>
-                    </div>
-                  </div>
-                </div>
+                ))}
 
                 <div className="mt-8 flex justify-center">
                   <HandSymbol size={80} animated={true} />
@@ -372,19 +328,13 @@ function MarketPositioning() {
             <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
               OUR POSITION
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Market Positioning</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.solution.features.title}</h2>
             <p className="text-xl text-gray-600 mb-6">
               Gestus stands out by offering an AI-powered, scalable solution that is both accessible and affordable.
             </p>
 
             <div className="space-y-4">
-              {[
-                "Continuous updates and improvements",
-                "Latest educational content",
-                "Affordable pricing model",
-                "Accessible to all users",
-                "Scalable technology infrastructure",
-              ].map((item, index) => (
+              {t.solution.benefits.items.slice(0, 5).map((item, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: 20 }}
@@ -567,8 +517,10 @@ function BusinessStrategy() {
 
 // Call to Action Section
 function CallToAction() {
+  const t = useTranslation()
+  
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-[#f0f9ff] relative overflow-hidden">
+    <section className="py-20 bg-gradient-to-b from-[#f0f9ff] to-white relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-[#ffd23f]/10 animate-float" />
         <div
@@ -578,31 +530,27 @@ function CallToAction() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
-              JOIN US
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to transform sign language learning?</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-10">
-              Experience the future of sign language education with Gestus. Our AI-powered platform makes learning
-              accessible, engaging, and effective.
-            </p>
-          </motion.div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center"
+        >
+          <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
+            JOIN US
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.about.cta.title}</h2>
+          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+            {t.about.cta.content}
+          </p>
 
-        <div className="text-center">
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
             <a
               href="/prototype"
               className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#009fe3] to-[#ffd23f] text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              <span>Try Gestus Now</span>
+              <span>{t.about.cta.button}</span>
               <svg
                 className="ml-2 w-5 h-5 animate-bounce"
                 fill="none"
@@ -614,79 +562,12 @@ function CallToAction() {
               </svg>
             </a>
           </motion.div>
-          
+
           <div className="mt-12 flex justify-center">
             <HandSymbol size={120} animated={true} />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
-  )
-}
-
-// Hand Symbol Component
-function HandSymbol({ size = 100, animated = true, color = "#ffd23f" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Palm */}
-      <motion.circle
-        cx="50"
-        cy="50"
-        r="30"
-        fill={color}
-        stroke="#ffffff"
-        strokeWidth="2"
-        initial={animated ? { scale: 0.8 } : { scale: 1 }}
-        animate={animated ? { scale: [0.8, 1, 0.8] } : { scale: 1 }}
-        transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-      />
-
-      {/* Fingers */}
-      <motion.path
-        d="M50 20 L50 5"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-      />
-      <motion.path
-        d="M65 25 L75 15"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.2 }}
-      />
-      <motion.path
-        d="M75 40 L90 35"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.4 }}
-      />
-      <motion.path
-        d="M35 25 L25 15"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.6 }}
-      />
-      <motion.path
-        d="M25 40 L10 35"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.8 }}
-      />
-    </svg>
   )
 }

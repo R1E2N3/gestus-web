@@ -1,16 +1,20 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { motion, useAnimation, useInView } from "framer-motion"
+import { useEffect, useState, useRef } from "react"
+import { useTranslation } from "../hooks/useTranslation"
 import PlayfulCTA from "./PlayfulCTA"
 import HandSign from "./HandSign"
 import WaveBackground from "./WaveBackground"
 import AnimatedEyes from "./AnimatedEyes"
 
 export default function PlayfulHero() {
+  const controls = useAnimation()
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.2 })
+  const t = useTranslation()
   const [scrollY, setScrollY] = useState(0)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
-  const words = ["Fun", "Interactive", "Engaging", "Playful", "Educational"]
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,14 +25,18 @@ export default function PlayfulHero() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Set up word cycling animation
   useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentWordIndex((prevIndex) => (prevIndex + 1) % words.length)
-    }, 2000)
+    if (inView) {
+      controls.start("visible")
+    }
+  }, [controls, inView])
 
-    return () => clearInterval(intervalId)
-  }, [words.length])
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentWordIndex((prev) => (prev + 1) % t.hero.words.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [t.hero.words.length])
 
   return (
     <section className="relative min-h-screen pt-20 overflow-hidden bg-gradient-to-b from-white to-[#f8f9fa]">
@@ -37,38 +45,59 @@ export default function PlayfulHero() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
-                <span className="block">Master Libras with</span>
-                <span className="block mt-2 bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
-                  Gestus
-                </span>
+            <motion.div
+              ref={ref}
+              initial="hidden"
+              animate={controls}
+              variants={{
+                hidden: { opacity: 0, y: 50 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: {
+                    duration: 0.8,
+                    ease: "easeOut",
+                  },
+                },
+              }}
+              className="text-center mb-12"
+            >
+              <span className="inline-block px-4 py-1 bg-[#ffd23f]/20 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
+                {t.hero.title}
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                {t.hero.subtitle}
               </h1>
+              <div className="flex justify-center items-center gap-2 mb-8">
 
-              <div className="mt-6 text-xl text-gray-600 space-y-4">
-                <p>Discover the power of sign language through our</p>
-                <div className="h-10 overflow-hidden relative">
-                  {words.map((word, index) => (
-                    <motion.p
-                      key={word}
-                      className="font-bold text-2xl text-[#009fe3] absolute w-full"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ 
-                        opacity: currentWordIndex === index ? 1 : 0,
-                        y: currentWordIndex === index ? 0 : 20
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {word}
-                    </motion.p>
-                  ))}
-                </div>
-                <p>learning platform designed for everyone.</p>
+                <span className="text-xl text-gray-600">Make it</span>
+                <motion.span
+                  key={currentWordIndex}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="text-2xl font-bold text-[#009fe3]"
+                >
+                  {t.hero.words[currentWordIndex]}
+                </motion.span>
               </div>
-
-              <div className="mt-10">
-                <PlayfulCTA />
-              </div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+                <a
+                  href="/prototype"
+                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#009fe3] to-[#ffd23f] text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  {t.hero.cta}
+                  <svg
+                    className="ml-2 w-5 h-5 animate-bounce"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                </a>
+              </motion.div>
             </motion.div>
           </div>
 
@@ -157,7 +186,6 @@ export default function PlayfulHero() {
       </div>
 
       {/* Animated eyes that follow cursor */}
-      <AnimatedEyes />
 
       {/* Green ellipse for smooth transition */}
       <div className="absolute -bottom-20 left-0 right-0 z-0 overflow-hidden">

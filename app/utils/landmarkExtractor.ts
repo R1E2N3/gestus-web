@@ -7,6 +7,7 @@ import {
   FilesetResolver,
   PoseLandmarker,
   HandLandmarker,
+  DrawingUtils,
 } from "@mediapipe/tasks-vision";
 
 // MediaPipe instances
@@ -207,8 +208,6 @@ export function drawLandmarks(canvas: HTMLCanvasElement): void {
     return;
   }
 
-  const { DrawingUtils, PoseLandmarker, HandLandmarker } = (window as any)
-    .mpTasksVision;
   const drawingUtils = new DrawingUtils(ctx);
 
   // Draw pose landmarks

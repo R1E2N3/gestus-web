@@ -415,34 +415,44 @@ export default function ContributePage() {
           className={`w-full py-3 px-4 rounded-lg text-white font-medium mb-6 ${
             isCapturing
               ? "bg-red-600 hover:bg-red-700"
-              : "bg-blue-600 hover:bg-blue-700"
+              : recordedFrames.length == 0
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-yellow-600 hover:bg-yellow-700"
           } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          {isCapturing ? "Stop" : "Start"}
+          {isCapturing
+            ? "Stop"
+            : recordedFrames.length == 0
+            ? "Start"
+            : "Restart"}
         </button>
 
         {/* Video and canvas container */}
-        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-6">
-          <video
-            ref={videoRef}
-            className="absolute top-0 left-0 w-full h-full object-cover"
-            playsInline
-            muted
-          />
-          <canvas
-            ref={canvasRef}
-            className="absolute top-0 left-0 w-full h-full object-cover"
-          />
-          {!isCapturing && (
-            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
-              {mediapipeReady ? "Press Start to begin" : "Loading MediaPipe..."}
-            </div>
-          )}
-        </div>
+        {recordedFrames.length == 0 && (
+          <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-6">
+            <video
+              ref={videoRef}
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              playsInline
+              muted
+            />
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 w-full h-full object-cover"
+            />
+            {!isCapturing && (
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
+                {mediapipeReady
+                  ? "Press Start to begin"
+                  : "Loading MediaPipe..."}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Preview section - only visible when recording is done */}
         {recordedFrames.length > 0 && (
-          <div className="mt-8">
+          <div>
             <h2 className="text-2xl font-bold mb-4">Recording Preview</h2>
             <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-4">
               <canvas

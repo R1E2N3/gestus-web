@@ -1,56 +1,17 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { useTranslation } from "../hooks/useTranslation"
+import HandSymbolSmall from "./HandSymbolSmall"
 
-// Feature data with improved content and icons
-const features = [
-  {
-    id: 1,
-    title: "Learn all the signs from the ground up",
-    description: "in your own pace",
-    icon: "👐",
-    color: "#ffd23f",
-  },
-  {
-    id: 2,
-    title: "Hundreds of interactive lessons",
-    description: "talk to AI, practice with friends, grind the games to earn points.",
-    icon: "📚",
-    color: "#009fe3",
-  },
-  {
-    id: 3,
-    title: "Accessible to everyone",
-    description: "children and adults, high school and university. Give sign language a try!",
-    icon: "🌈",
-    color: "#ffd23f",
-  },
-  {
-    id: 4,
-    title: "Form association easily",
-    description: "with intuitive visual cues",
-    icon: "👁️",
-    color: "#009fe3",
-  },
-  {
-    id: 5,
-    title: "Support both learning styles",
-    description: "visual and interactive",
-    icon: "🧠",
-    color: "#ffd23f",
-  },
-  {
-    id: 6,
-    title: "Stay motivated with",
-    description: "interactive games and challenges",
-    icon: "🎮",
-    color: "#009fe3",
-  },
-]
+// Icon mappings for features
+const featureIcons = ["👐", "📚", "🌈", "👁️", "🧠", "🎮"]
+const featureColors = ["#ffd23f", "#009fe3", "#ffd23f", "#009fe3", "#ffd23f", "#009fe3"]
 
 export default function AboutGestusSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const featureRefs = useRef<(HTMLDivElement | null)[]>([])
+  const t = useTranslation()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -116,17 +77,13 @@ export default function AboutGestusSection() {
       {/* Section title */}
       <div className="relative z-10 max-w-4xl mx-auto text-center mb-20">
         <span className="inline-block px-4 py-1 bg-[#ffd23f]/10 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
-          LEARN WITH GESTUS
+          {t.aboutGestus.heading}
         </span>
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          Simplify your Libras learning journey with{" "}
-          <span className="relative inline-block">
-            <span className="relative z-10">Gestus</span>
-            <span className="absolute bottom-2 left-0 w-full h-3 bg-[#ffd23f]/30 -z-10 transform -rotate-1"></span>
-          </span>
+          {t.aboutGestus.title}
         </h2>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Our interactive platform makes learning sign language fun, engaging, and effective for everyone.
+          {t.aboutGestus.subtitle}
         </p>
       </div>
 
@@ -170,21 +127,21 @@ export default function AboutGestusSection() {
             {/* App features */}
             <div className="md:col-span-2 order-1 md:order-2">
               <h3 className="text-2xl font-bold mb-6 text-center md:text-left">
-                Designed for an immersive learning experience
+                {t.aboutGestus.immersive}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {features.slice(0, 4).map((feature, index) => (
+                {t.aboutGestus.features.slice(0, 4).map((feature, index) => (
                   <div
-                    key={feature.id}
+                    key={index}
                     ref={(el) => { featureRefs.current[index] = el; }}
                     className="bg-white rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 opacity-0 translate-y-10"
                     style={{ transitionDelay: `${index * 100}ms` }}
                   >
                     <div
                       className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-4"
-                      style={{ backgroundColor: `${feature.color}20`, color: feature.color }}
+                      style={{ backgroundColor: `${featureColors[index]}20`, color: featureColors[index] }}
                     >
-                      {feature.icon}
+                      {featureIcons[index]}
                     </div>
                     <h4 className="text-lg font-bold">{feature.title}</h4>
                     <p className="text-gray-600">{feature.description}</p>
@@ -198,12 +155,12 @@ export default function AboutGestusSection() {
 
       {/* Call to action */}
       <div className="relative z-10 max-w-2xl mx-auto mt-20 text-center">
-        <h3 className="text-2xl font-bold mb-6">Ready to start your learning journey?</h3>
+        <h3 className="text-2xl font-bold mb-6">{t.aboutGestus.cta}</h3>
         <a
           href="/prototype"
           className="inline-block px-8 py-4 bg-[#009fe3] text-white rounded-full font-bold text-lg shadow-lg hover:bg-[#0080b3] transition-colors duration-300"
         >
-          Try Gestus Now
+          {t.aboutGestus.ctaButton}
         </a>
       </div>
     </section>
@@ -251,23 +208,6 @@ function HandSymbol() {
         className="animate-pulse"
         style={{ animationDelay: "0.4s" }}
       />
-    </svg>
-  )
-}
-
-// Smaller Hand Symbol for UI elements
-function HandSymbolSmall() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Palm */}
-      <circle cx="50" cy="50" r="30" fill="#ffffff" />
-
-      {/* Fingers */}
-      <path d="M50 20 L50 5" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" />
-      <path d="M65 25 L75 15" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" />
-      <path d="M75 40 L90 35" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" />
-      <path d="M35 25 L25 15" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" />
-      <path d="M25 40 L10 35" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" />
     </svg>
   )
 }

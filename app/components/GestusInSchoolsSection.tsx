@@ -4,10 +4,12 @@ import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import Image from "next/image"
 import HandSymbol from "./HandSymbol"
+import { useTranslation } from "../hooks/useTranslation"
 
 export default function GestusInSchoolsSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, threshold: 0.1 })
+  const t = useTranslation()
 
   return (
     <section ref={sectionRef} className="py-24 px-4 bg-white relative overflow-hidden">
@@ -26,17 +28,13 @@ export default function GestusInSchoolsSection() {
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 bg-[#ffd23f]/10 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
-            MAKING AN IMPACT
+            {t.schools.heading}
           </span>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Gestus in{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10">Schools</span>
-              <span className="absolute bottom-2 left-0 w-full h-3 bg-[#ffd23f]/30 -z-10 transform -rotate-1"></span>
-            </span>
+            {t.schools.title}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Our founders are actively bringing sign language education to schools across Brazil
+            {t.schools.subtitle}
           </p>
         </motion.div>
 
@@ -58,10 +56,9 @@ export default function GestusInSchoolsSection() {
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">João in Action</h3>
+                <h3 className="text-xl font-bold mb-2">{t.schools.joaoCard.title}</h3>
                 <p className="text-gray-600">
-                  João teaching sign language at a local school using the Gestus platform, making learning interactive
-                  and engaging.
+                  {t.schools.joaoCard.description}
                 </p>
               </div>
             </div>
@@ -85,9 +82,9 @@ export default function GestusInSchoolsSection() {
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">Renzo in Action</h3>
+                <h3 className="text-xl font-bold mb-2">{t.schools.renzoCard.title}</h3>
                 <p className="text-gray-600">
-                  Renzo working with students to introduce them to sign language through the Gestus platform.
+                  {t.schools.renzoCard.description}
                 </p>
               </div>
             </div>
@@ -105,9 +102,9 @@ export default function GestusInSchoolsSection() {
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             <div className="text-center">
-              <div className="text-4xl font-bold text-[#ffd23f] mb-2">Our Mission</div>
+              <div className="text-4xl font-bold text-[#ffd23f] mb-2">{t.schools.mission}</div>
               <p className="text-gray-700">
-                To bring sign language education to every school in Brazil, creating a more inclusive society.
+                {t.schools.missionText}
               </p>
             </div>
 
@@ -116,9 +113,9 @@ export default function GestusInSchoolsSection() {
             </div>
 
             <div className="text-center">
-              <div className="text-4xl font-bold text-[#009fe3] mb-2">Join Us</div>
+              <div className="text-4xl font-bold text-[#009fe3] mb-2">{t.schools.join}</div>
               <p className="text-gray-700">
-                Help us bridge communication gaps and create a more inclusive Brazil through sign language education.
+                {t.schools.joinText}
               </p>
             </div>
           </div>

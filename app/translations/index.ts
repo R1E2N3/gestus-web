@@ -157,6 +157,57 @@ export const translations = {
         },
       ],
     },
+    schools: {
+      heading: "MAKING AN IMPACT",
+      title: "Gestus in Schools",
+      subtitle: "Our founders are actively bringing sign language education to schools across Brazil",
+      joaoCard: {
+        title: "João in Action",
+        description: "João teaching sign language at a local school using the Gestus platform, making learning interactive and engaging."
+      },
+      renzoCard: {
+        title: "Renzo in Action",
+        description: "Renzo working with students to introduce them to sign language through the Gestus platform."
+      },
+      mission: "Our Mission",
+      missionText: "To bring sign language education to every school in Brazil, creating a more inclusive society.",
+      join: "Join Us",
+      joinText: "Help us bridge communication gaps and create a more inclusive Brazil through sign language education."
+    },
+    aboutGestus: {
+      heading: "LEARN WITH GESTUS",
+      title: "Simplify your Libras learning journey with Gestus",
+      subtitle: "Our interactive platform makes learning sign language fun, engaging, and effective for everyone.",
+      immersive: "Designed for an immersive learning experience",
+      features: [
+        {
+          title: "Learn all the signs from the ground up",
+          description: "in your own pace"
+        },
+        {
+          title: "Hundreds of interactive lessons",
+          description: "talk to AI, practice with friends, grind the games to earn points."
+        },
+        {
+          title: "Accessible to everyone",
+          description: "children and adults, high school and university. Give sign language a try!"
+        },
+        {
+          title: "Form association easily",
+          description: "with intuitive visual cues"
+        },
+        {
+          title: "Support both learning styles",
+          description: "visual and interactive"
+        },
+        {
+          title: "Stay motivated with",
+          description: "interactive games and challenges"
+        }
+      ],
+      cta: "Ready to start your learning journey?",
+      ctaButton: "Try Gestus Now"
+    },
     solution: {
       heading: "Our Solution",
       title: "How Gestus Works",
@@ -394,6 +445,57 @@ export const translations = {
           description: "crianças e adultos, ensino médio e universitário. Experimente a Libras!",
         },
       ],
+    },
+    schools: {
+      heading: "FAZENDO A DIFERENÇA",
+      title: "Gestus nas Escolas",
+      subtitle: "Nossos fundadores estão ativamente levando educação em língua de sinais para escolas em todo o Brasil",
+      joaoCard: {
+        title: "João em Ação",
+        description: "João ensinando língua de sinais em uma escola local usando a plataforma Gestus, tornando o aprendizado interativo e envolvente."
+      },
+      renzoCard: {
+        title: "Renzo em Ação",
+        description: "Renzo trabalhando com estudantes para introduzi-los à língua de sinais através da plataforma Gestus."
+      },
+      mission: "Nossa Missão",
+      missionText: "Levar educação em língua de sinais para todas as escolas do Brasil, criando uma sociedade mais inclusiva.",
+      join: "Junte-se a Nós",
+      joinText: "Ajude-nos a eliminar barreiras de comunicação e criar um Brasil mais inclusivo através da educação em língua de sinais."
+    },
+    aboutGestus: {
+      heading: "APRENDA COM O GESTUS",
+      title: "Simplifique sua jornada de aprendizado de Libras com o Gestus",
+      subtitle: "Nossa plataforma interativa torna o aprendizado de língua de sinais divertido, envolvente e eficaz para todos.",
+      immersive: "Projetado para uma experiência de aprendizado imersiva",
+      features: [
+        {
+          title: "Aprenda todos os sinais desde o básico",
+          description: "no seu próprio ritmo"
+        },
+        {
+          title: "Centenas de aulas interativas",
+          description: "converse com IA, pratique com amigos, jogue para ganhar pontos."
+        },
+        {
+          title: "Acessível para todos",
+          description: "crianças e adultos, ensino médio e universitário. Experimente a Libras!"
+        },
+        {
+          title: "Forme associações facilmente",
+          description: "com dicas visuais intuitivas"
+        },
+        {
+          title: "Suporte a ambos os estilos de aprendizado",
+          description: "visual e interativo"
+        },
+        {
+          title: "Mantenha-se motivado com",
+          description: "jogos e desafios interativos"
+        }
+      ],
+      cta: "Pronto para começar sua jornada de aprendizado?",
+      ctaButton: "Experimente o Gestus Agora"
     },
     solution: {
       heading: "Nossa Solução",

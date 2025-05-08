@@ -9,6 +9,14 @@ import {
   drawLandmarks,
 } from "../utils/landmarkExtractor";
 
+// Import MediaPipe dependencies for drawing
+import {
+  DrawingUtils,
+  PoseLandmarker,
+  HandLandmarker,
+} from "@mediapipe/tasks-vision";
+import { start } from "repl";
+
 export default function ContributePage() {
   // States for component
   const [isCapturing, setIsCapturing] = useState(false);
@@ -16,12 +24,21 @@ export default function ContributePage() {
   const [message, setMessage] = useState<string>("");
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<string>("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedFrames, setRecordedFrames] = useState<number[][]>([]);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+  const [currentPreviewFrame, setCurrentPreviewFrame] = useState(0);
+  const [previewSpeed, setPreviewSpeed] = useState(60); // frames per second
 
   // References
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const previewAnimationRef = useRef<number | null>(null);
+  const recordedLandmarksRef = useRef<number[][]>([]);
+  const drawingUtilsRef = useRef<DrawingUtils | null>(null);
 
   // Initialize MediaPipe and get camera devices when component mounts
   useEffect(() => {
@@ -61,6 +78,7 @@ export default function ContributePage() {
     // Cleanup function for when component unmounts
     return () => {
       stopCapture();
+      stopPreviewAnimation();
     };
   }, []);
 
@@ -68,8 +86,10 @@ export default function ContributePage() {
   const updateCanvas = async () => {
     try {
       // Extract landmarks from current frame
-      console.log("Extracting landmarks...");
       const landmarks = await extractLandmarks(videoRef.current);
+
+      // Record landmarks if recording is active
+      recordedLandmarksRef.current.push([...landmarks]);
 
       // Draw landmarks on canvas
       drawLandmarks(canvasRef.current);
@@ -83,6 +103,8 @@ export default function ContributePage() {
 
   // Start capturing video and extracting landmarks
   const startCapture = async () => {
+    setRecordedFrames([]); // Clear previous frames
+    setCurrentPreviewFrame(0); // Reset preview frame index
     try {
       if (!mediapipeReady) {
         setMessage("MediaPipe is not ready yet. Please wait.");
@@ -108,10 +130,25 @@ export default function ContributePage() {
           canvasRef.current.width = videoRef.current.videoWidth;
           canvasRef.current.height = videoRef.current.videoHeight;
         }
+
+        // Initialize preview canvas with same dimensions
+        if (previewCanvasRef.current) {
+          previewCanvasRef.current.width = videoRef.current.videoWidth;
+          previewCanvasRef.current.height = videoRef.current.videoHeight;
+
+          // Initialize drawing utils for preview
+          const ctx = previewCanvasRef.current.getContext("2d");
+          if (ctx) {
+            drawingUtilsRef.current = new DrawingUtils(ctx);
+          }
+        }
       }
 
+      // Start recording fresh
+      recordedLandmarksRef.current = [];
+      setIsRecording(true);
       setIsCapturing(true);
-      setMessage("MediaPipe is now processing your video...");
+      setMessage("Recording landmarks... Press Stop when done.");
 
       // Start animation frame loop for drawing landmarks
       animationFrameRef.current = requestAnimationFrame(updateCanvas);
@@ -136,7 +173,17 @@ export default function ContributePage() {
     }
 
     setIsCapturing(false);
-    setMessage("Video capture stopped.");
+
+    // Stop recording and prepare for preview
+    if (isRecording && recordedLandmarksRef.current.length > 0) {
+      const frames = [...recordedLandmarksRef.current];
+      setRecordedFrames(frames);
+      setIsRecording(false);
+      setMessage(`Recording complete! Captured ${frames.length} frames.`);
+      console.log("Recorded frames:", frames);
+      // Start preview animation
+      startPreviewAnimation(frames);
+    }
   };
 
   // Toggle capture state
@@ -146,6 +193,189 @@ export default function ContributePage() {
     } else {
       startCapture();
     }
+  };
+
+  useEffect(() => {
+    stopPreviewAnimation(); // Stop any existing preview animation
+    if (recordedFrames.length > 0) {
+      startPreviewAnimation(recordedFrames);
+    }
+  }, [previewSpeed]);
+
+  // Start preview animation of recorded landmarks
+  const startPreviewAnimation = (frames: number[][]) => {
+    if (!frames || frames.length === 0) return;
+
+    setIsPreviewPlaying(true);
+
+    let lastTimestamp = 0;
+    let frameIndex = 0; // Use local variable instead of state for animation
+    const currentSpeed = previewSpeed || 60; // Default to 60fps if speed is invalid
+
+    const animate = (timestamp: number) => {
+      // Always use the current speed value
+      if (timestamp - lastTimestamp >= 1000 / currentSpeed) {
+        // Ensure we're not exceeding array bounds
+        if (frames.length > 0) {
+          frameIndex = (frameIndex + 1) % frames.length; // Loop through frames
+          setCurrentPreviewFrame(frameIndex); // Update state for UI
+
+          // Draw the current frame on the preview canvas
+          if (frames[frameIndex]) {
+            drawPreviewFrame(frames[frameIndex]);
+          }
+        }
+
+        lastTimestamp = timestamp;
+      }
+
+      // Continue animation loop if still playing
+      previewAnimationRef.current = requestAnimationFrame(animate);
+    };
+
+    // Start animation loop
+    previewAnimationRef.current = requestAnimationFrame(animate);
+  };
+
+  // Draw a specific frame on the preview canvas
+  const drawPreviewFrame = (landmarksArray: number[]) => {
+    console.log("Drawing preview frame", landmarksArray);
+    const canvas = previewCanvasRef.current;
+
+    const ctx = canvas.getContext("2d");
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Extract pose and hand landmarks
+    const poseLandmarks = extractPoseLandmarks(landmarksArray);
+    const handLandmarks = extractHandLandmarks(landmarksArray);
+
+    drawingUtilsRef.current = new DrawingUtils(ctx);
+
+    // Draw pose landmarks if available
+    if (poseLandmarks.length > 0) {
+      drawingUtilsRef.current.drawLandmarks(poseLandmarks, {
+        radius: 3,
+        color: "#FF0000",
+      });
+      drawingUtilsRef.current.drawConnectors(
+        poseLandmarks,
+        PoseLandmarker.POSE_CONNECTIONS,
+        {
+          color: "#00FF00",
+          lineWidth: 2,
+        }
+      );
+    }
+
+    // Draw hand landmarks if available
+    handLandmarks.forEach((handLms, i) => {
+      const isLeftHand = i === 0;
+      drawingUtilsRef.current?.drawLandmarks(handLms, {
+        radius: 2,
+        color: isLeftHand ? "#00FF00" : "#FF0000",
+      });
+      drawingUtilsRef.current?.drawConnectors(
+        handLms,
+        HandLandmarker.HAND_CONNECTIONS,
+        {
+          color: isLeftHand ? "#CC0000" : "#00CC00",
+          lineWidth: 2,
+        }
+      );
+    });
+  };
+
+  // Stop preview animation
+  const stopPreviewAnimation = () => {
+    if (previewAnimationRef.current) {
+      cancelAnimationFrame(previewAnimationRef.current);
+      previewAnimationRef.current = null;
+    }
+    setIsPreviewPlaying(false);
+  };
+
+  // Toggle preview animation
+  const togglePreview = () => {
+    if (isPreviewPlaying) {
+      stopPreviewAnimation();
+    } else if (recordedFrames.length > 0) {
+      startPreviewAnimation(recordedFrames);
+    }
+  };
+
+  // Extract pose landmarks from flat array
+  const extractPoseLandmarks = (landmarks: number[]) => {
+    const NUM_POSE_LANDMARKS = 33;
+    const poseLandmarks = [];
+
+    for (let i = 0; i < NUM_POSE_LANDMARKS; i++) {
+      const offset = i * 3;
+
+      // Check if this landmark has valid data
+      if (
+        landmarks[offset] !== 0 ||
+        landmarks[offset + 1] !== 0 ||
+        landmarks[offset + 2] !== 0
+      ) {
+        poseLandmarks.push({
+          x: landmarks[offset] || 0,
+          y: landmarks[offset + 1] || 0,
+          z: landmarks[offset + 2] || 0,
+        });
+      }
+    }
+
+    return poseLandmarks;
+  };
+
+  // Extract hand landmarks from flat array
+  const extractHandLandmarks = (landmarks: number[]) => {
+    const NUM_POSE_LANDMARKS = 33;
+    const NUM_HAND_LANDMARKS = 21;
+    const hands = [];
+
+    // Extract left hand landmarks
+    const leftHandLandmarks = [];
+    const leftHandStartOffset = NUM_POSE_LANDMARKS * 3;
+
+    let hasLeftHand = false;
+    for (let i = 0; i < NUM_HAND_LANDMARKS; i++) {
+      const offset = leftHandStartOffset + i * 3;
+      const x = landmarks[offset] || 0;
+      const y = landmarks[offset + 1] || 0;
+      const z = landmarks[offset + 2] || 0;
+
+      if (x !== 0 || y !== 0 || z !== 0) {
+        hasLeftHand = true;
+      }
+
+      leftHandLandmarks.push({ x, y, z });
+    }
+
+    // Extract right hand landmarks
+    const rightHandLandmarks = [];
+    const rightHandStartOffset = leftHandStartOffset + NUM_HAND_LANDMARKS * 3;
+
+    let hasRightHand = false;
+    for (let i = 0; i < NUM_HAND_LANDMARKS; i++) {
+      const offset = rightHandStartOffset + i * 3;
+      const x = landmarks[offset] || 0;
+      const y = landmarks[offset + 1] || 0;
+      const z = landmarks[offset + 2] || 0;
+
+      if (x !== 0 || y !== 0 || z !== 0) {
+        hasRightHand = true;
+      }
+
+      rightHandLandmarks.push({ x, y, z });
+    }
+
+    if (hasLeftHand) hands.push(leftHandLandmarks);
+    if (hasRightHand) hands.push(rightHandLandmarks);
+
+    return hands;
   };
 
   return (
@@ -192,7 +422,7 @@ export default function ContributePage() {
         </button>
 
         {/* Video and canvas container */}
-        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full">
+        <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-6">
           <video
             ref={videoRef}
             className="absolute top-0 left-0 w-full h-full object-cover"
@@ -209,6 +439,56 @@ export default function ContributePage() {
             </div>
           )}
         </div>
+
+        {/* Preview section - only visible when recording is done */}
+        {recordedFrames.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-4">Recording Preview</h2>
+            <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-4">
+              <canvas
+                ref={previewCanvasRef}
+                className="w-full h-full object-cover"
+              />
+              {!isPreviewPlaying && (
+                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
+                  Click Play to view recorded sequence
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-4 items-center">
+              <button
+                onClick={togglePreview}
+                className={`flex-1 py-3 px-4 rounded-lg text-white font-medium ${
+                  isPreviewPlaying
+                    ? "bg-yellow-600 hover:bg-yellow-700"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {isPreviewPlaying ? "Pause Preview" : "Play Preview"}
+              </button>
+
+              {/* Frame counter */}
+              <div className="bg-gray-100 rounded-lg px-4 py-3 text-center">
+                Frame: {currentPreviewFrame + 1} / {recordedFrames.length}
+              </div>
+
+              {/* Playback speed control */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm">Speed:</label>
+                <select
+                  value={previewSpeed}
+                  onChange={(e) => setPreviewSpeed(Number(e.target.value))}
+                  className="p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="15">Slow (15fps)</option>
+                  <option value="30">Medium (30fps)</option>
+                  <option value="60">Fast (60fps)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

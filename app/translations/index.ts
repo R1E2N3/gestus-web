@@ -287,6 +287,24 @@ export const translations = {
         subtitle: "Join Gestus today and begin learning Brazilian Sign Language in a fun, interactive way.",
         button: "Try Gestus Now"
       }
+    },
+    footer: {
+      about: "Transforming sign language learning through interactive technology",
+      quickLinks: "Quick Links",
+      aboutUs: "About Us",
+      ourSolution: "Our Solution",
+      contribute: "Contribute",
+      tryPrototype: "Try Prototype",
+      support: "Support",
+      contactUs: "Contact Us",
+      faq: "FAQ",
+      privacyPolicy: "Privacy Policy",
+      termsOfService: "Terms of Service",
+      stayUpdated: "Stay Updated",
+      newsletterText: "Subscribe to our newsletter for the latest updates",
+      emailPlaceholder: "Your email address",
+      copyright: "© {year} Gestus. All rights reserved.",
+      legalText: "The content, design, and technology of this website are protected by copyright and intellectual property laws. Unauthorized reproduction or distribution of any material from this website is strictly prohibited."
     }
   },
   pt: {
@@ -316,11 +334,11 @@ export const translations = {
       subtitle: "Somos apaixonados por tornar a Língua Brasileira de Sinais (Libras) acessível a todos",
       story: {
         title: "Nossa História",
-        content: "O Gestus nasceu durante uma reunião noturna no Discord onde João Pedro Marques Santos e Renzo Honorato discutiam educação científica e perceberam o quanto as pessoas surdas estão isoladas desse mundo. Com 1% da população brasileira sendo surda ou com deficiência auditiva, decidimos criar uma solução."
+        content: "O Gestus nasceu durante uma reunião de madrugada no Discord onde João Pedro Santos e Renzo Honorato discutiam educação de ciências no Brasil e perceberam o quanto as pessoas surdas estão isoladas desse mundo. Com 1% da população brasileira sendo surda ou com deficiência auditiva, decidimos criar uma solução."
       },
       team: {
         title: "Conheça os Fundadores",
-        subtitle: "Os nerds por trás do Gestus que querem tornar a língua de sinais comum no Brasil.",
+        subtitle: "Os nerds por trás do Gestus que querem tornar a língua de sinais componente da educação básica brasileira.",
         members: [
           {
             name: "João Pedro Marques Santos",
@@ -576,6 +594,24 @@ export const translations = {
         subtitle: "Junte-se ao Gestus hoje e comece a aprender Libras de forma divertida e interativa.",
         button: "Experimente o Gestus Agora"
       }
+    },
+    footer: {
+      about: "Transformando o aprendizado de língua de sinais através de tecnologia interativa",
+      quickLinks: "Links Rápidos",
+      aboutUs: "Sobre Nós",
+      ourSolution: "Nossa Solução",
+      contribute: "Contribuir",
+      tryPrototype: "Experimentar Protótipo",
+      support: "Suporte",
+      contactUs: "Contate-nos",
+      faq: "Perguntas Frequentes",
+      privacyPolicy: "Política de Privacidade",
+      termsOfService: "Termos de Serviço",
+      stayUpdated: "Mantenha-se Atualizado",
+      newsletterText: "Inscreva-se na nossa newsletter para receber as últimas atualizações",
+      emailPlaceholder: "Seu endereço de email",
+      copyright: "© {year} Gestus. Todos os direitos reservados.",
+      legalText: "O conteúdo, design e tecnologia deste site são protegidos por leis de direitos autorais e propriedade intelectual. A reprodução ou distribuição não autorizada de qualquer material deste site é estritamente proibida."
     }
   },
 } 

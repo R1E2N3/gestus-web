@@ -320,7 +320,7 @@ function TeamSection() {
           ))}
         </div>
 
-        <motion.div
+        {/* <motion.div
           variants={{
             hidden: { opacity: 0, y: 30 },
             visible: {
@@ -358,7 +358,7 @@ function TeamSection() {
               ),
             )}
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   )

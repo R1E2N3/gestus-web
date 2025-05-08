@@ -1,13 +1,14 @@
-import Link from 'next/link';
-import Logo from '../Logo/page';
-import Image from 'next/image';
-import logoImg from '../../images/logo.png';
+import Link from "next/link";
+import Logo from "../Logo/page";
+import Image from "next/image";
+import logoImg from "../../images/logo.png";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/our-solution", label: "Our Solution" },
   { href: "/about", label: "About Us" },
   { href: "/prototype", label: "Prototype" },
+  { href: "/contribute", label: "Contribute" },
 ];
 
 export default function Nav() {
@@ -17,7 +18,13 @@ export default function Nav() {
         {/* Logo on the left */}
         <Link href="/">
           <div className="overflow-hidden w-16 h-16 flex items-center justify-center p-1">
-            <Image src={logoImg} alt="Gestus Logo" width={40} height={40} className="object-contain" />
+            <Image
+              src={logoImg}
+              alt="Gestus Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
           </div>
         </Link>
         {/* Centered links */}
@@ -39,4 +46,4 @@ export default function Nav() {
       </div>
     </nav>
   );
-} 
+}

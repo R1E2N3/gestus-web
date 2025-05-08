@@ -159,6 +159,29 @@ export default function PlayfulHero() {
       {/* Animated eyes that follow cursor */}
       <AnimatedEyes />
 
+      {/* Green ellipse for smooth transition */}
+      <div className="absolute -bottom-20 left-0 right-0 z-0 overflow-hidden">
+        <svg 
+          viewBox="0 0 1440 120" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg" 
+          preserveAspectRatio="none" 
+          width="100%" 
+          height="120"
+        >
+          <motion.ellipse 
+            cx="720" 
+            cy="60" 
+            rx="720" 
+            ry="120" 
+            fill="#7ed957"
+            initial={{ scaleX: 0.8, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ duration: 1 }}
+          />
+        </svg>
+      </div>
+
       {/* Decorative bottom wave */}
       <div className="absolute bottom-0 left-0 right-0 z-0">
         <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="100%" height="320">

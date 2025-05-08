@@ -11,8 +11,8 @@ export default function About() {
     <>
       <PlayfulNav />
       <HeroSection />
-      <MissionVisionSection />
       <TeamSection />
+      <MissionVisionSection />
       <TimelineSection />
       <StatisticsSection />
       <ValuesSection />
@@ -277,7 +277,7 @@ function TeamSection() {
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Meet the Founders</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            The visionaries behind Gestus who are passionate about making sign language accessible to all Brazilians.
+            The nerds behind Gestus who want to make sign language mainstream in Brazil.
           </p>
         </motion.div>
 

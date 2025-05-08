@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+
+// Import MediaPipe types
 import {
   initMediaPipe,
   extractLandmarks,
@@ -64,22 +66,19 @@ export default function ContributePage() {
 
   // Function to update the canvas with landmarks
   const updateCanvas = async () => {
-    if (videoRef.current && canvasRef.current && isCapturing) {
-      try {
-        // Extract landmarks from current frame
-        const landmarks = await extractLandmarks(videoRef.current);
+    try {
+      // Extract landmarks from current frame
+      console.log("Extracting landmarks...");
+      const landmarks = await extractLandmarks(videoRef.current);
 
-        // Draw landmarks on canvas
-        drawLandmarks(canvasRef.current);
-      } catch (error) {
-        console.error("Error extracting landmarks:", error);
-      }
-
-      // Continue the animation loop if still capturing
-      if (isCapturing) {
-        animationFrameRef.current = requestAnimationFrame(updateCanvas);
-      }
+      // Draw landmarks on canvas
+      drawLandmarks(canvasRef.current);
+    } catch (error) {
+      console.error("Error extracting landmarks:", error);
     }
+
+    // Continue the animation loop if still capturing
+    animationFrameRef.current = requestAnimationFrame(updateCanvas);
   };
 
   // Start capturing video and extracting landmarks

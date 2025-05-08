@@ -76,7 +76,6 @@ export async function initMediaPipe(): Promise<void> {
 export async function extractLandmarks(
   videoElement: HTMLVideoElement
 ): Promise<number[]> {
-  console.log("[LandmarkExtractor] extractLandmarks called");
   return new Promise(async (resolve, reject) => {
     if (!poseLandmarker || !handLandmarker || !mediaPipeReady) {
       reject(
@@ -201,12 +200,6 @@ export function drawLandmarks(canvas: HTMLCanvasElement): void {
 
   // Clear the canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Check if we have the drawing utils available
-  if (!(window as any).mpTasksVision) {
-    console.warn("MediaPipe Tasks Vision not available for drawing");
-    return;
-  }
 
   const drawingUtils = new DrawingUtils(ctx);
 

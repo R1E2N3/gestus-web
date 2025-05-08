@@ -1,23 +1,18 @@
 /**
  * Client-side landmark extraction utilities using MediaPipe Tasks Vision API
- * Based on the newer and more efficient MediaPipe Tasks API
  */
 
-// Import types for better TypeScript support
-type LandmarkResult = {
-  landmarks: Array<{
-    x: number;
-    y: number;
-    z: number;
-    visibility?: number;
-  }>;
-};
+// Import MediaPipe types
+import {
+  FilesetResolver,
+  PoseLandmarker,
+  HandLandmarker,
+} from "@mediapipe/tasks-vision";
 
 // MediaPipe instances
 let poseLandmarker: any = null;
 let handLandmarker: any = null;
 let mediaPipeReady = false;
-let lastVideoTime = -1;
 
 // Store last detection results for visualization
 let lastResults = {
@@ -28,12 +23,6 @@ let lastResults = {
 // Constants for landmark counts
 const NUM_POSE_LANDMARKS = 33;
 const NUM_HAND_LANDMARKS = 21;
-
-import {
-  FilesetResolver,
-  PoseLandmarker,
-  HandLandmarker,
-} from "@mediapipe/tasks-vision";
 
 /**
  * Initialize MediaPipe Pose and Hand Landmarker models
@@ -79,26 +68,6 @@ export async function initMediaPipe(): Promise<void> {
 }
 
 /**
- * Helper function to load scripts dynamically
- */
-function loadScript(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // Check if the script is already loaded
-    if (document.querySelector(`script[src="${src}"]`)) {
-      resolve();
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-    document.body.appendChild(script);
-  });
-}
-
-/**
  * Process a single video frame and extract landmarks
  * @param videoElement - HTML Video Element with camera feed
  * @returns Promise resolving to extracted landmarks array
@@ -106,6 +75,7 @@ function loadScript(src: string): Promise<void> {
 export async function extractLandmarks(
   videoElement: HTMLVideoElement
 ): Promise<number[]> {
+  console.log("[LandmarkExtractor] extractLandmarks called");
   return new Promise(async (resolve, reject) => {
     if (!poseLandmarker || !handLandmarker || !mediaPipeReady) {
       reject(
@@ -127,6 +97,8 @@ export async function extractLandmarks(
       lastResults.poseLandmarks = poseResults.landmarks?.[0] || null;
       lastResults.handLandmarks = handResults.landmarks || [];
 
+      console.log("[LandmarkExtractor] lastResults", lastResults);
+
       // Extract and format landmarks
       const landmarks = formatLandmarks(poseResults, handResults);
       resolve(landmarks);
@@ -139,7 +111,6 @@ export async function extractLandmarks(
 
 /**
  * Format landmarks from pose and hands results into a flat array
- * Following the same structure as the Python implementation
  */
 function formatLandmarks(poseResults: any, handResults: any): number[] {
   // Create a flat array to hold all landmarks
@@ -201,7 +172,6 @@ function formatLandmarks(poseResults: any, handResults: any): number[] {
       offset += 3;
     }
   } else {
-    // Skip left hand landmarks if not detected
     offset += NUM_HAND_LANDMARKS * 3;
   }
 
@@ -213,7 +183,7 @@ function formatLandmarks(poseResults: any, handResults: any): number[] {
       allLandmarks[offset + 2] = landmark.z || 0;
       offset += 3;
     }
-  } // No need to pad with zeros as we've already initialized the array with zeros
+  }
 
   return allLandmarks;
 }

@@ -110,7 +110,7 @@ export default function PlayfulNav() {
             <LanguageToggle />
             <a
               href="/prototype"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors min-w-[100px]"
             >
               {t.nav.tryNow}
             </a>

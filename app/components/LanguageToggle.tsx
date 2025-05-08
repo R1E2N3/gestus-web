@@ -5,25 +5,29 @@ import { motion } from "framer-motion"
 
 export default function LanguageToggle() {
   const { language, toggleLanguage } = useLanguage()
+  
+  // Determine if the toggle is in the "on" (Portuguese) position
+  const isOn = language === "pt"
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+    <div 
       onClick={toggleLanguage}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+      className="cursor-pointer w-16 h-8 flex items-center"
     >
-      {language === "en" ? (
-        <>
-          <span>🇧🇷</span>
-          <span className="text-sm font-medium">PT</span>
-        </>
-      ) : (
-        <>
-          <span>🇺🇸</span>
-          <span className="text-sm font-medium">EN</span>
-        </>
-      )}
-    </motion.button>
+      {/* Gray track for the ball to move in */}
+      <div className="relative w-full h-6 bg-gray-200 rounded-full shadow-inner">
+        {/* Moving ball with flag */}
+        <motion.div
+          initial={false}
+          animate={{ x: isOn ? "calc(100% - 22px)" : "2px" }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="absolute top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center"
+        >
+          <span className="text-xs">
+            {isOn ? "🇧🇷" : "🇺🇸"}
+          </span>
+        </motion.div>
+      </div>
+    </div>
   )
 } 

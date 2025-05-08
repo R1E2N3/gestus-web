@@ -3,6 +3,7 @@
 import { motion, useAnimation, useInView } from "framer-motion"
 import { useEffect, useState, useRef } from "react"
 import { useTranslation } from "../hooks/useTranslation"
+import { useLanguage } from "../contexts/LanguageContext"
 import PlayfulCTA from "./PlayfulCTA"
 import HandSign from "./HandSign"
 import WaveBackground from "./WaveBackground"
@@ -13,6 +14,7 @@ export default function PlayfulHero() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.2 })
   const t = useTranslation()
+  const { language } = useLanguage()
   const [scrollY, setScrollY] = useState(0)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
 
@@ -68,18 +70,21 @@ export default function PlayfulHero() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
                 {t.hero.subtitle}
               </h1>
-              <div className="flex justify-center items-center gap-2 mb-8">
-
-                <span className="text-xl text-gray-600">Make it</span>
-                <motion.span
-                  key={currentWordIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="text-2xl font-bold text-[#009fe3]"
-                >
-                  {t.hero.words[currentWordIndex]}
-                </motion.span>
+              <div className="flex justify-center items-center mb-8">
+                <div className="flex items-center">
+                  <span className="text-xl text-gray-600 mr-2">{t.hero.makeIt}</span>
+                  <div className="w-32 h-10 relative">
+                    <motion.span
+                      key={currentWordIndex}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="text-2xl font-bold text-[#009fe3] absolute left-0"
+                    >
+                      {t.hero.words[currentWordIndex]}
+                    </motion.span>
+                  </div>
+                </div>
               </div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
                 <a

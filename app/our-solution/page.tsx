@@ -120,6 +120,15 @@ function HeroSection() {
 // Key Differentiators Section
 function KeyDifferentiators() {
   const t = useTranslation()
+  const controls = useAnimation()
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.2 })
+  
+  useEffect(() => {
+    if (inView) {
+      controls.start("visible")
+    }
+  }, [controls, inView])
   
   return (
     <section className="py-20 bg-white relative overflow-hidden">
@@ -136,10 +145,19 @@ function KeyDifferentiators() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            ref={ref}
+            initial="hidden"
+            animate={controls}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: { 
+                opacity: 1, 
+                y: 0,
+                transition: {
+                  duration: 0.6
+                }
+              }
+            }}
           >
             <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
               WHAT MAKES US DIFFERENT
@@ -156,9 +174,18 @@ function KeyDifferentiators() {
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
+              animate={controls}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { 
+                  opacity: 1, 
+                  y: 0,
+                  transition: {
+                    duration: 0.6,
+                    delay: index * 0.2
+                  }
+                }
+              }}
               whileHover={{ y: -10 }}
               className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
             >
@@ -273,6 +300,15 @@ function TargetDemographic() {
 // Market Positioning Section
 function MarketPositioning() {
   const t = useTranslation()
+  const controls = useAnimation()
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.2 })
+  
+  useEffect(() => {
+    if (inView) {
+      controls.start("visible")
+    }
+  }, [controls, inView])
   
   return (
     <section className="py-20 bg-[#f0f9ff] relative overflow-hidden">
@@ -319,10 +355,20 @@ function MarketPositioning() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            ref={ref}
+            initial="hidden"
+            animate={controls}
+            variants={{
+              hidden: { opacity: 0, x: 50 },
+              visible: {
+                opacity: 1,
+                x: 0,
+                transition: {
+                  duration: 0.6,
+                  delay: 0.3
+                }
+              }
+            }}
             className="order-1 md:order-2"
           >
             <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
@@ -337,10 +383,17 @@ function MarketPositioning() {
               {t.solution.benefits.items.slice(0, 5).map((item, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                  variants={{
+                    hidden: { opacity: 0, x: 20 },
+                    visible: {
+                      opacity: 1,
+                      x: 0,
+                      transition: {
+                        duration: 0.4,
+                        delay: 0.5 + index * 0.1
+                      }
+                    }
+                  }}
                   className="flex items-start"
                 >
                   <div className="w-6 h-6 rounded-full bg-[#009fe3]/20 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">

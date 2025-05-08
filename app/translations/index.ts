@@ -7,12 +7,14 @@ export const translations = {
         solution: "Our Solution",
         about: "About Us",
         prototype: "Prototype"
+        
       }
     },
     hero: {
       title: "Learn Sign Language with AI",
       subtitle: "Learn Sign Language the fun way.",
       cta: "Start Learning",
+      makeIt: "Make it",
       words: [
         "Interactive",
         "Fun",
@@ -250,9 +252,10 @@ export const translations = {
       title: "Aprenda Libras com IA",
       subtitle: "Aprenda LIBRAS com jogos interativos.",
       cta: "Começar a Aprender",
+      makeIt: "De forma",
       words: [
-        "Interativo",
-        "Divertido",
+        "Interativa",
+        "Divertida",
         "Eficaz",
         "Acessível"
       ]

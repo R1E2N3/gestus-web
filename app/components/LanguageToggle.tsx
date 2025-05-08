@@ -6,28 +6,23 @@ import { motion } from "framer-motion"
 export default function LanguageToggle() {
   const { language, toggleLanguage } = useLanguage()
   
-  // Determine if the toggle is in the "on" (Portuguese) position
-  const isOn = language === "pt"
-
   return (
-    <div 
+    <motion.button
       onClick={toggleLanguage}
-      className="cursor-pointer w-16 h-8 flex items-center"
+      className="text-xl cursor-pointer focus:outline-none"
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
     >
-      {/* Gray track for the ball to move in */}
-      <div className="relative w-full h-6 bg-gray-200 rounded-full shadow-inner">
-        {/* Moving ball with flag */}
-        <motion.div
-          initial={false}
-          animate={{ x: isOn ? "calc(100% - 22px)" : "2px" }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="absolute top-1/2 transform -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center"
-        >
-          <span className="text-xs">
-            {isOn ? "🇧🇷" : "🇺🇸"}
-          </span>
-        </motion.div>
-      </div>
-    </div>
+      <motion.span
+        key={language}
+        initial={{ rotateY: 90, opacity: 0 }}
+        animate={{ rotateY: 0, opacity: 1 }}
+        exit={{ rotateY: -90, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        style={{ display: 'inline-block' }}
+      >
+        {language === "en" ? "🇺🇸" : "🇧🇷"}
+      </motion.span>
+    </motion.button>
   )
 } 

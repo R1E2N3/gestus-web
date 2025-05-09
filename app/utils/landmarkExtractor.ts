@@ -43,7 +43,7 @@ export async function initMediaPipe(): Promise<void> {
             "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
           delegate: "GPU",
         },
-        runningMode: "IMAGE", // Start with image mode, will change to VIDEO when needed
+        runningMode: "VIDEO", // Use VIDEO mode for real-time processing
         numPoses: 1,
       });
 
@@ -54,7 +54,7 @@ export async function initMediaPipe(): Promise<void> {
             "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
           delegate: "GPU",
         },
-        runningMode: "IMAGE", // Start with image mode, will change to VIDEO when needed
+        runningMode: "VIDEO", // Use VIDEO mode for real-time processing
         numHands: 2,
       });
 
@@ -66,6 +66,33 @@ export async function initMediaPipe(): Promise<void> {
       reject(error);
     }
   });
+}
+
+/**
+ * Checks if a video element is valid for processing
+ * @param videoElement - HTML Video Element to check
+ * @returns boolean indicating if video is valid
+ */
+function isVideoValid(videoElement: HTMLVideoElement): boolean {
+  // Check if video element exists
+  if (!videoElement) {
+    console.error("Video element is null or undefined");
+    return false;
+  }
+
+  // Check if video has valid dimensions
+  if (!videoElement.videoWidth || !videoElement.videoHeight) {
+    console.error(`Invalid video dimensions: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+    return false;
+  }
+
+  // Check if video is ready
+  if (videoElement.readyState < 2) { // HAVE_CURRENT_DATA or higher
+    console.error(`Video not ready: readyState=${videoElement.readyState}`);
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -86,25 +113,37 @@ export async function extractLandmarks(
       return;
     }
 
+    // Validate video before processing
+    if (!isVideoValid(videoElement)) {
+      console.warn("Video validation failed, returning empty landmarks");
+      // Return empty landmarks array rather than rejecting
+      const emptyLandmarks = new Array((NUM_POSE_LANDMARKS + 2 * NUM_HAND_LANDMARKS) * 3).fill(0);
+      resolve(emptyLandmarks);
+      return;
+    }
+
     try {
+      // Get current timestamp for VIDEO mode
+      const nowInMs = Date.now();
+      
       // Process the current frame for pose landmarks
-      const poseResults = poseLandmarker.detect(videoElement);
+      const poseResults = poseLandmarker.detectForVideo(videoElement, nowInMs);
 
       // Process the current frame for hand landmarks
-      const handResults = handLandmarker.detect(videoElement);
+      const handResults = handLandmarker.detectForVideo(videoElement, nowInMs);
 
       // Store results for visualization
       lastResults.poseLandmarks = poseResults.landmarks?.[0] || null;
       lastResults.handLandmarks = handResults.landmarks || [];
-
-      console.log("[LandmarkExtractor] lastResults", lastResults);
 
       // Extract and format landmarks
       const landmarks = formatLandmarks(poseResults, handResults);
       resolve(landmarks);
     } catch (error) {
       console.error("Error extracting landmarks:", error);
-      reject(error);
+      // Return empty landmarks array on error instead of rejecting
+      const emptyLandmarks = new Array((NUM_POSE_LANDMARKS + 2 * NUM_HAND_LANDMARKS) * 3).fill(0);
+      resolve(emptyLandmarks);
     }
   });
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_BASE_URL } from "@/app/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,9 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Send the landmarks data to the Gestus API
     console.log("Sending data to Gestus API...");
-    const apiUrl =
-      process.env.GESTUS_API_URL ||
-      "http://192.168.15.36:5001/contribute";
+    const apiUrl = `${API_BASE_URL}/contribute`;
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {

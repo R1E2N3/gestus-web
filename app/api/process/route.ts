@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/app/lib/constants";
 
 export async function POST(request: Request) {
   try {
@@ -25,9 +26,7 @@ export async function POST(request: Request) {
     }
 
     // For development purposes, we'll send this to our AI model API
-    // This should point to where your Flask API is hosted
-    const modelApiUrl =
-      process.env.MODEL_API_URL || "http://192.168.15.36:5001/process";
+    const modelApiUrl = `${API_BASE_URL}/process`;
 
     // Forward the request to the model API
     const modelResponse = await fetch(modelApiUrl, {

@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     // For development purposes, we'll send this to our AI model API
     // This should point to where your Flask API is hosted
     const modelApiUrl =
-      process.env.MODEL_API_URL || "http://127.0.0.1:5000/process";
+      process.env.MODEL_API_URL || "https://gestus-api.onrender.com/process";
 
     // Forward the request to the model API
     const modelResponse = await fetch(modelApiUrl, {

@@ -42,7 +42,12 @@ export default function PlayfulHero() {
 
   return (
     <section className="relative min-h-screen pt-20 overflow-hidden bg-gradient-to-b from-white to-[#f8f9fa]">
-      <WaveBackground />
+      {/* Colorful circles */}
+      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#009fe3]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7ed957]/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-[#ffd23f]/10 rounded-full blur-3xl" />
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -227,6 +232,41 @@ export default function PlayfulHero() {
           />
         </svg>
       </div>
+
+      {/* Bouncing arrow */}
+      <motion.div 
+        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+        animate={{ 
+          y: [0, 10, 0],
+          opacity: scrollY > 100 ? 0 : 1
+        }}
+        transition={{ 
+          y: {
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut"
+          },
+          opacity: {
+            duration: 0.3,
+            ease: "easeInOut"
+          }
+        }}
+      >
+        <svg 
+          className="w-8 h-8 text-[#009fe3]"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M19 14l-7 7m0 0l-7-7m7 7V3" 
+          />
+        </svg>
+      </motion.div>
     </section>
   )
 }

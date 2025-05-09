@@ -590,6 +590,41 @@ export default function GamePage() {
 
           {!gameResult && (
             <>
+              {/* How it works section */}
+              <motion.div
+                className="mb-8 bg-white rounded-2xl shadow-lg p-6 w-full max-w-2xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <h3 className="text-xl font-bold mb-4 flex items-center">
+                  <span className="w-8 h-8 rounded-full bg-[#009fe3]/20 text-[#009fe3] flex items-center justify-center mr-3">
+                    💡
+                  </span>
+                  How to Play
+                </h3>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-start">
+                    <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                      1
+                    </span>
+                    <span>Press "Start Recording" and perform the sign shown above</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                      2
+                    </span>
+                    <span>Stop the recording when you're done to preview your sign</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                      3
+                    </span>
+                    <span>Click "Check My Sign" to see if our AI recognizes your sign correctly</span>
+                  </li>
+                </ul>
+              </motion.div>
+
               {/* Current Sign Display */}
               {currentSign && (
                 <motion.div
@@ -862,55 +897,17 @@ export default function GamePage() {
                   </motion.button>
                 )}
               </motion.div>
-
-              {/* How it works section */}
-              <motion.div
-                className="mt-12 bg-white rounded-2xl shadow-lg p-6 w-full max-w-2xl"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
-              >
-                <h3 className="text-xl font-bold mb-4 flex items-center">
-                  <span className="w-8 h-8 rounded-full bg-[#009fe3]/20 text-[#009fe3] flex items-center justify-center mr-3">
-                    💡
-                  </span>
-                  How to Play
-                </h3>
-                <ul className="space-y-2 text-gray-600">
-                  <li className="flex items-start">
-                    <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
-                      1
-                    </span>
-                    <span>Press "Start Recording" and perform the sign shown above</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
-                      2
-                    </span>
-                    <span>Stop the recording when you're done to preview your sign</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
-                      3
-                    </span>
-                    <span>Click "Check My Sign" to see if our AI recognizes your sign correctly</span>
-                  </li>
-                </ul>
-              </motion.div>
             </>
           )}
         </div>
       </main>
 
       {/* Decorative elements */}
-      <div className="fixed bottom-0 left-0 right-0 z-[-1] overflow-hidden pointer-events-none">
-        <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" width="100%" height="320">
-          <path
-            d="M0,96L48,106.7C96,117,192,139,288,154.7C384,171,480,181,576,170.7C672,160,768,128,864,122.7C960,117,1056,139,1152,154.7C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            fill="#ffd23f"
-            opacity="0.2"
-          />
-        </svg>
+      <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        {/* Colorful circles */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#009fe3]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#ffd23f]/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-[#7ed957]/10 rounded-full blur-3xl" />
       </div>
     </div>
   );

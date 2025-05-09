@@ -4,7 +4,7 @@ export async function GET(request: NextRequest) {
   try {
     // Fetch dataset statistics from the backend API
     const response = await fetch(
-      "https://gestus-api.onrender.com/dataset-stats"
+      "http://192.168.15.36:5001/dataset-stats"
     );
 
     if (!response.ok) {

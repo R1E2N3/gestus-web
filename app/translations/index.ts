@@ -6,8 +6,9 @@ export const translations = {
         home: "Home",
         solution: "Our Solution",
         about: "About Us",
-        prototype: "Prototype"
-        
+        prototype: "Prototype",
+        game: "Play Game",
+        contribute: "Contribute"
       }
     },
     hero: {
@@ -314,7 +315,9 @@ export const translations = {
         home: "Início",
         solution: "Nossa Solução",
         about: "Sobre Nós",
-        prototype: "Protótipo"
+        prototype: "Protótipo",
+        game: "Jogar",
+        contribute: "Contribuir"
       }
     },
     hero: {

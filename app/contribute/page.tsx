@@ -18,6 +18,7 @@ import {
 
 // Import motion for animations
 import { motion } from "framer-motion";
+import PlayfulNav from "../components/PlayfulNav";
 
 export default function ContributePage() {
   // States for component
@@ -478,7 +479,8 @@ export default function ContributePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f0f9ff]">
-      <main className="container mx-auto px-4 pt-16 pb-10 max-w-5xl">
+      <PlayfulNav />
+      <main className="container mx-auto px-4 pt-24 pb-10 max-w-5xl">
         <div className="flex flex-col items-center">
           {/* Page title */}
           <motion.h1 

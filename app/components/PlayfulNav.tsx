@@ -7,7 +7,7 @@ import HandSymbolSmall from "./HandSymbolSmall"
 import LanguageToggle from "./LanguageToggle"
 import { useTranslation } from "../hooks/useTranslation"
 
-type NavLinkKey = "home" | "solution" | "about" | "prototype"
+type NavLinkKey = "home" | "solution" | "about" | "game" | "contribute"
 
 interface NavLink {
   href: string
@@ -19,7 +19,8 @@ const navLinks: NavLink[] = [
   { href: "/", key: "home", emoji: "🏠" },
   { href: "/our-solution", key: "solution", emoji: "💡" },
   { href: "/about", key: "about", emoji: "👋" },
-  { href: "/prototype", key: "prototype", emoji: "🚀" },
+  { href: "/game", key: "game", emoji: "🎮" },
+  { href: "/contribute", key: "contribute", emoji: "✨" },
 ]
 
 export default function PlayfulNav() {
@@ -109,7 +110,7 @@ export default function PlayfulNav() {
           <div className="flex items-center gap-4">
             <LanguageToggle />
             <a
-              href="/prototype"
+              href="/game"
               className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors w-[120px]"
             >
               {t.nav.tryNow}
@@ -139,7 +140,7 @@ export default function PlayfulNav() {
         
         <div className="px-5 pt-2 pb-5">
           <a
-            href="/prototype"
+            href="/game"
             className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors min-w-[100px] w-full"
           >
             {t.nav.tryNow}

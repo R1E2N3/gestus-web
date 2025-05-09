@@ -6,11 +6,11 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     // Check if we have the required data
-    if (!data || !data.sign || !data.landmarks) {
+    if (!data || !data.sign || !data.frames) {
       return NextResponse.json(
         {
           status: "error",
-          error: "Missing required data (sign or landmarks)",
+          error: "Missing required data (sign or frames)",
         },
         { status: 400 }
       );
@@ -18,9 +18,8 @@ export async function POST(request: NextRequest) {
 
     // Send the landmarks data to the Gestus API
     console.log("Sending data to Gestus API...");
-    const apiUrl =
-      process.env.GESTUS_API_URL ||
-      "http://192.168.15.36:5001/contribute";
+    const apiUrl = "http://192.168.15.36:5001/submit-sign";
+    
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         sign: data.sign,
-        landmarks: data.landmarks,
+        frames: data.frames,
       }),
     });
 
@@ -63,14 +62,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(responseData);
   } catch (error: any) {
-    console.error("Error submitting contribution:", error);
+    console.error("Error submitting sign:", error);
     return NextResponse.json(
       {
         status: "error",
-        error: error.message || "Failed to submit contribution",
+        error: error.message || "Failed to submit sign",
         stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 }
     );
   }
-}
+} 

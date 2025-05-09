@@ -15,6 +15,7 @@ import {
   PoseLandmarker,
   HandLandmarker,
 } from "@mediapipe/tasks-vision";
+import { start } from "repl";
 
 export default function ContributePage() {
   // States for component
@@ -28,10 +29,6 @@ export default function ContributePage() {
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
   const [currentPreviewFrame, setCurrentPreviewFrame] = useState(0);
   const [previewSpeed, setPreviewSpeed] = useState(60); // frames per second
-  const [currentSign, setCurrentSign] = useState<string>("");
-  const [isLoadingSign, setIsLoadingSign] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showThankYou, setShowThankYou] = useState(false);
 
   // References
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -43,32 +40,6 @@ export default function ContributePage() {
   const recordedLandmarksRef = useRef<number[][]>([]);
   const drawingUtilsRef = useRef<DrawingUtils | null>(null);
 
-  // Fetch a random sign from the API
-  const fetchRandomSign = async () => {
-    try {
-      setIsLoadingSign(true);
-      const response = await fetch("/api/random-sign");
-      if (!response.ok) {
-        throw new Error("Failed to fetch random sign");
-      }
-      const data = await response.json();
-      setCurrentSign(data.sign);
-      setMessage(
-        `Please perform the sign for "${data.sign}". Press Start when ready.`
-      );
-    } catch (error) {
-      console.error("Error fetching random sign:", error);
-      setMessage("Failed to fetch a random sign. Please try again.");
-    } finally {
-      setIsLoadingSign(false);
-    }
-  };
-
-  // Skip current sign and get a new one
-  const handleSkipSign = () => {
-    fetchRandomSign();
-  };
-
   // Initialize MediaPipe and get camera devices when component mounts
   useEffect(() => {
     // Initialize MediaPipe
@@ -78,9 +49,7 @@ export default function ContributePage() {
       .then(() => {
         console.log("MediaPipe initialized successfully");
         setMediapipeReady(true);
-
-        // Fetch random sign after MediaPipe is initialized
-        fetchRandomSign();
+        setMessage("MediaPipe models loaded. You can now start the camera.");
       })
       .catch((error) => {
         console.error("Error initializing MediaPipe:", error);
@@ -179,7 +148,7 @@ export default function ContributePage() {
       recordedLandmarksRef.current = [];
       setIsRecording(true);
       setIsCapturing(true);
-      setMessage(`Recording sign "${currentSign}"... Press Stop when done.`);
+      setMessage("Recording landmarks... Press Stop when done.");
 
       // Start animation frame loop for drawing landmarks
       animationFrameRef.current = requestAnimationFrame(updateCanvas);
@@ -211,6 +180,7 @@ export default function ContributePage() {
       setRecordedFrames(frames);
       setIsRecording(false);
       setMessage(`Recording complete! Captured ${frames.length} frames.`);
+      console.log("Recorded frames:", frames);
       // Start preview animation
       startPreviewAnimation(frames);
     }
@@ -269,6 +239,7 @@ export default function ContributePage() {
 
   // Draw a specific frame on the preview canvas
   const drawPreviewFrame = (landmarksArray: number[]) => {
+    console.log("Drawing preview frame", landmarksArray);
     const canvas = previewCanvasRef.current;
 
     const ctx = canvas.getContext("2d");
@@ -407,233 +378,126 @@ export default function ContributePage() {
     return hands;
   };
 
-  // Submit landmarks to the API
-  const submitLandmarks = async () => {
-    if (!currentSign || recordedFrames.length === 0) {
-      setMessage("No sign or landmarks to submit");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setMessage("Submitting landmarks...");
-
-    try {
-      const response = await fetch("/api/contribute", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sign: currentSign,
-          landmarks: recordedFrames,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Error: ${response.status}`);
-      }
-
-      // Show thank you screen
-      setShowThankYou(true);
-      setMessage("Thank you for your contribution!");
-    } catch (error) {
-      console.error("Error submitting landmarks:", error);
-      setMessage(`Failed to submit: ${error.message || "Unknown error"}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Start over with a new sign
-  const startOver = () => {
-    // Reset states
-    setShowThankYou(false);
-    setRecordedFrames([]);
-    setCurrentPreviewFrame(0);
-    stopPreviewAnimation();
-
-    // Fetch a new sign
-    fetchRandomSign();
-  };
-
   return (
     <section className="p-8 max-w-4xl mx-auto flex flex-col gap-6">
       <div className="bg-white/20 backdrop-blur-md border border-gray-200 rounded-xl p-6 shadow-md">
-        <h1 className="text-3xl font-bold mb-4">Contribute to our dataset!</h1>
+        <h1 className="text-3xl font-bold mb-4">Camera Landmark Detection</h1>
 
-        {/* Thank you screen */}
-        {showThankYou ? (
-          <div className="text-center py-12">
-            <div className="text-5xl mb-4">🎉</div>
-            <h2 className="text-2xl font-bold mb-4">Thank You!</h2>
-            <p className="mb-8">
-              Your sign contribution has been submitted successfully.
-            </p>
-            <button
-              onClick={startOver}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Record Another Sign
-            </button>
+        {/* Message display */}
+        {message && (
+          <div className="p-4 mb-4 bg-gray-100 text-gray-800 rounded-lg">
+            {message}
           </div>
-        ) : (
-          <>
-            {/* Current Sign Display */}
-            {currentSign && (
-              <div className="p-4 mb-4 bg-blue-100 text-blue-800 rounded-lg flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">Current Sign:</h3>
-                  <p className="text-xl font-bold">{currentSign}</p>
+        )}
+
+        {/* Camera selector */}
+        <div className="mb-6">
+          <label className="block mb-2 font-medium">Select Camera:</label>
+          <select
+            value={selectedDevice}
+            onChange={(e) => setSelectedDevice(e.target.value)}
+            disabled={isCapturing}
+            className="w-full p-2 border border-gray-300 rounded-md"
+          >
+            {devices.length === 0 && <option value="">No cameras found</option>}
+            {devices.map((device) => (
+              <option key={device.deviceId} value={device.deviceId}>
+                {device.label || `Camera ${device.deviceId.slice(0, 5)}...`}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Start/Stop button */}
+        <button
+          onClick={toggleCapture}
+          disabled={!mediapipeReady || devices.length === 0}
+          className={`w-full py-3 px-4 rounded-lg text-white font-medium mb-6 ${
+            isCapturing
+              ? "bg-red-600 hover:bg-red-700"
+              : recordedFrames.length == 0
+              ? "bg-blue-600 hover:bg-blue-700"
+              : "bg-yellow-600 hover:bg-yellow-700"
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {isCapturing
+            ? "Stop"
+            : recordedFrames.length == 0
+            ? "Start"
+            : "Restart"}
+        </button>
+
+        {/* Video and canvas container */}
+        {recordedFrames.length == 0 && (
+          <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-6">
+            <video
+              ref={videoRef}
+              className="absolute top-0 left-0 w-full h-full object-cover"
+              playsInline
+              muted
+            />
+            <canvas
+              ref={canvasRef}
+              className="absolute top-0 left-0 w-full h-full object-cover"
+            />
+            {!isCapturing && (
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
+                {mediapipeReady
+                  ? "Press Start to begin"
+                  : "Loading MediaPipe..."}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Preview section - only visible when recording is done */}
+        {recordedFrames.length > 0 && (
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Recording Preview</h2>
+            <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-4">
+              <canvas
+                ref={previewCanvasRef}
+                className="w-full h-full object-cover"
+              />
+              {!isPreviewPlaying && (
+                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
+                  Click Play to view recorded sequence
                 </div>
-                <button
-                  onClick={handleSkipSign}
-                  disabled={isLoadingSign || isCapturing}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoadingSign ? "Loading..." : "Skip / New Sign"}
-                </button>
-              </div>
-            )}
-
-            {/* Message display */}
-            {message && (
-              <div className="p-4 mb-4 bg-gray-100 text-gray-800 rounded-lg">
-                {message}
-              </div>
-            )}
-
-            {/* Camera selector */}
-            <div className="mb-6">
-              <label className="block mb-2 font-medium">Select Camera:</label>
-              <select
-                value={selectedDevice}
-                onChange={(e) => setSelectedDevice(e.target.value)}
-                disabled={isCapturing}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                {devices.length === 0 && (
-                  <option value="">No cameras found</option>
-                )}
-                {devices.map((device) => (
-                  <option key={device.deviceId} value={device.deviceId}>
-                    {device.label || `Camera ${device.deviceId.slice(0, 5)}...`}
-                  </option>
-                ))}
-              </select>
+              )}
             </div>
 
-            {/* Start/Stop button */}
-            <button
-              onClick={toggleCapture}
-              disabled={!mediapipeReady || devices.length === 0 || !currentSign}
-              className={`w-full py-3 px-4 rounded-lg text-white font-medium mb-6 ${
-                isCapturing
-                  ? "bg-red-600 hover:bg-red-700"
-                  : recordedFrames.length == 0
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-yellow-600 hover:bg-yellow-700"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {isCapturing
-                ? "Stop"
-                : recordedFrames.length == 0
-                ? "Start"
-                : "Restart"}
-            </button>
+            <div className="flex gap-4 items-center">
+              <button
+                onClick={togglePreview}
+                className={`flex-1 py-3 px-4 rounded-lg text-white font-medium ${
+                  isPreviewPlaying
+                    ? "bg-yellow-600 hover:bg-yellow-700"
+                    : "bg-green-600 hover:bg-green-700"
+                }`}
+              >
+                {isPreviewPlaying ? "Pause Preview" : "Play Preview"}
+              </button>
 
-            {/* Video and canvas container */}
-            {recordedFrames.length == 0 && (
-              <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-6">
-                <video
-                  ref={videoRef}
-                  className="absolute top-0 left-0 w-full h-full object-cover"
-                  playsInline
-                  muted
-                />
-                <canvas
-                  ref={canvasRef}
-                  className="absolute top-0 left-0 w-full h-full object-cover"
-                />
-                {!isCapturing && (
-                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
-                    {mediapipeReady && currentSign
-                      ? `Ready to record sign: "${currentSign}"`
-                      : "Loading..."}
-                  </div>
-                )}
+              {/* Frame counter */}
+              <div className="bg-gray-100 rounded-lg px-4 py-3 text-center">
+                Frame: {currentPreviewFrame + 1} / {recordedFrames.length}
               </div>
-            )}
 
-            {/* Preview section - only visible when recording is done */}
-            {recordedFrames.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold mb-4">
-                  Recording Preview: "{currentSign}"
-                </h2>
-                <div className="relative bg-black rounded-lg overflow-hidden aspect-video w-full mb-4">
-                  <canvas
-                    ref={previewCanvasRef}
-                    className="w-full h-full object-cover"
-                  />
-                  {!isPreviewPlaying && (
-                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/50 text-white">
-                      Click Play to view recorded sequence
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-4 items-center mb-6">
-                  <button
-                    onClick={togglePreview}
-                    className={`flex-1 py-3 px-4 rounded-lg text-white font-medium ${
-                      isPreviewPlaying
-                        ? "bg-yellow-600 hover:bg-yellow-700"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    {isPreviewPlaying ? "Pause Preview" : "Play Preview"}
-                  </button>
-
-                  {/* Frame counter */}
-                  <div className="bg-gray-100 rounded-lg px-4 py-3 text-center">
-                    Frame: {currentPreviewFrame + 1} / {recordedFrames.length}
-                  </div>
-
-                  {/* Playback speed control */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-sm">Speed:</label>
-                    <select
-                      value={previewSpeed}
-                      onChange={(e) => setPreviewSpeed(Number(e.target.value))}
-                      className="p-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="15">Slow (15fps)</option>
-                      <option value="30">Medium (30fps)</option>
-                      <option value="60">Fast (60fps)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Submit button */}
-                <div className="flex gap-4">
-                  <button
-                    onClick={toggleCapture}
-                    className="flex-1 py-3 px-4 rounded-lg text-white font-medium bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    Restart
-                  </button>
-                  <button
-                    onClick={submitLandmarks}
-                    disabled={isSubmitting}
-                    className="flex-1 py-3 px-4 rounded-lg text-white font-medium bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit Recording"}
-                  </button>
-                </div>
+              {/* Playback speed control */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm">Speed:</label>
+                <select
+                  value={previewSpeed}
+                  onChange={(e) => setPreviewSpeed(Number(e.target.value))}
+                  className="p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="15">Slow (15fps)</option>
+                  <option value="30">Medium (30fps)</option>
+                  <option value="60">Fast (60fps)</option>
+                </select>
               </div>
-            )}
-          </>
+            </div>
+          </div>
         )}
       </div>
     </section>

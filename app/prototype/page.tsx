@@ -232,12 +232,16 @@ export default function PrototypePage() {
         }
       } else {
         console.warn("Canvas reference not available")
+        if (isCapturing) {
+          animationFrameRef.current = requestAnimationFrame(updateCanvas)
+        }
+        return
       }
 
       // Extract landmarks from current frame
       const landmarks = await extractLandmarks(videoRef.current)
 
-      // Record landmarks if recording is active
+      // Record landmarks if recording is active and they're not empty
       if (isRecording && landmarks.some(value => value !== 0)) {
         recordedLandmarksRef.current.push([...landmarks])
       }
@@ -252,6 +256,7 @@ export default function PrototypePage() {
       // Always continue the animation loop if still capturing, 
       // regardless of whether there was an error or not
       if (isCapturing) {
+        // Ensure we run the loop as fast as possible
         animationFrameRef.current = requestAnimationFrame(updateCanvas)
       }
     }
@@ -285,6 +290,7 @@ export default function PrototypePage() {
           deviceId: selectedDevice ? { exact: selectedDevice } : undefined,
           width: 640,
           height: 480,
+          frameRate: { ideal: 30 } // Request higher frame rate for smoother landmark detection
         },
         audio: false,
       })
@@ -368,6 +374,16 @@ export default function PrototypePage() {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = null
+      }
+
+      // Maximize rendering performance
+      if (canvasRef.current && canvasRef.current.getContext) {
+        const ctx = canvasRef.current.getContext('2d')
+        if (ctx) {
+          // Set rendering quality optimizations for performance
+          ctx.imageSmoothingEnabled = false
+          ctx.imageSmoothingQuality = 'low'
+        }
       }
 
       // Start animation frame loop for drawing landmarks
@@ -759,14 +775,22 @@ export default function PrototypePage() {
                 playsInline
                 muted
                 autoPlay
+                style={{ 
+                  transform: 'scaleX(-1)', // Mirror horizontally for more intuitive interaction
+                  WebkitTransform: 'scaleX(-1)',
+                }}
               />
               
               {isCapturing ? (
                 <>
-                  {/* Canvas for drawing landmarks - place above video */}
+                  {/* Canvas for drawing landmarks - place above video with same transform */}
                   <canvas 
                     ref={canvasRef} 
                     className="absolute inset-0 w-full h-full z-10"
+                    style={{ 
+                      transform: 'scaleX(-1)', // Mirror horizontally to match video
+                      WebkitTransform: 'scaleX(-1)',
+                    }}
                   />
                   
                   {/* Recording indicator */}
@@ -780,6 +804,10 @@ export default function PrototypePage() {
                 <canvas
                   ref={previewCanvasRef}
                   className="absolute inset-0 w-full h-full z-10"
+                  style={{ 
+                    transform: 'scaleX(-1)', // Mirror horizontally for consistency
+                    WebkitTransform: 'scaleX(-1)',
+                  }}
                 />
               ) : (
                 /* Placeholder when no video feed */

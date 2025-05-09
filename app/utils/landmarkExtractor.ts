@@ -43,7 +43,7 @@ export async function initMediaPipe(): Promise<void> {
             "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
           delegate: "GPU",
         },
-        runningMode: "VIDEO", // Use VIDEO mode for real-time processing
+        runningMode: "IMAGE", // Start with image mode, will change to VIDEO when needed
         numPoses: 1,
       });
 
@@ -54,7 +54,7 @@ export async function initMediaPipe(): Promise<void> {
             "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
           delegate: "GPU",
         },
-        runningMode: "VIDEO", // Use VIDEO mode for real-time processing
+        runningMode: "IMAGE", // Start with image mode, will change to VIDEO when needed
         numHands: 2,
       });
 
@@ -123,18 +123,17 @@ export async function extractLandmarks(
     }
 
     try {
-      // Get current timestamp for VIDEO mode
-      const nowInMs = Date.now();
-      
       // Process the current frame for pose landmarks
-      const poseResults = poseLandmarker.detectForVideo(videoElement, nowInMs);
+      const poseResults = poseLandmarker.detect(videoElement);
 
       // Process the current frame for hand landmarks
-      const handResults = handLandmarker.detectForVideo(videoElement, nowInMs);
+      const handResults = handLandmarker.detect(videoElement);
 
       // Store results for visualization
       lastResults.poseLandmarks = poseResults.landmarks?.[0] || null;
       lastResults.handLandmarks = handResults.landmarks || [];
+
+      console.log("[LandmarkExtractor] lastResults", lastResults);
 
       // Extract and format landmarks
       const landmarks = formatLandmarks(poseResults, handResults);

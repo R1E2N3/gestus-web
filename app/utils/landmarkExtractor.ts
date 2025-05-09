@@ -69,6 +69,33 @@ export async function initMediaPipe(): Promise<void> {
 }
 
 /**
+ * Checks if a video element is valid for processing
+ * @param videoElement - HTML Video Element to check
+ * @returns boolean indicating if video is valid
+ */
+function isVideoValid(videoElement: HTMLVideoElement): boolean {
+  // Check if video element exists
+  if (!videoElement) {
+    console.error("Video element is null or undefined");
+    return false;
+  }
+
+  // Check if video has valid dimensions
+  if (!videoElement.videoWidth || !videoElement.videoHeight) {
+    console.error(`Invalid video dimensions: ${videoElement.videoWidth}x${videoElement.videoHeight}`);
+    return false;
+  }
+
+  // Check if video is ready
+  if (videoElement.readyState < 2) { // HAVE_CURRENT_DATA or higher
+    console.error(`Video not ready: readyState=${videoElement.readyState}`);
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Process a single video frame and extract landmarks
  * @param videoElement - HTML Video Element with camera feed
  * @returns Promise resolving to extracted landmarks array
@@ -83,6 +110,15 @@ export async function extractLandmarks(
           "MediaPipe models not initialized or not ready. Call initMediaPipe first."
         )
       );
+      return;
+    }
+
+    // Validate video before processing
+    if (!isVideoValid(videoElement)) {
+      console.warn("Video validation failed, returning empty landmarks");
+      // Return empty landmarks array rather than rejecting
+      const emptyLandmarks = new Array((NUM_POSE_LANDMARKS + 2 * NUM_HAND_LANDMARKS) * 3).fill(0);
+      resolve(emptyLandmarks);
       return;
     }
 
@@ -104,7 +140,9 @@ export async function extractLandmarks(
       resolve(landmarks);
     } catch (error) {
       console.error("Error extracting landmarks:", error);
-      reject(error);
+      // Return empty landmarks array on error instead of rejecting
+      const emptyLandmarks = new Array((NUM_POSE_LANDMARKS + 2 * NUM_HAND_LANDMARKS) * 3).fill(0);
+      resolve(emptyLandmarks);
     }
   });
 }

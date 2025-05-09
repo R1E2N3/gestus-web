@@ -32,7 +32,9 @@ export default function GamePage() {
   const [isLoadingSign, setIsLoadingSign] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [predictions, setPredictions] = useState<any[]>([]);
-  const [gameResult, setGameResult] = useState<"correct" | "incorrect" | null>(null);
+  const [gameResult, setGameResult] = useState<"correct" | "incorrect" | null>(
+    null
+  );
 
   // References
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -437,10 +439,14 @@ export default function GamePage() {
       }
 
       const data = await response.json();
-      
-      if (data.status === "success" && data.predictions && data.predictions.length > 0) {
+
+      if (
+        data.status === "success" &&
+        data.predictions &&
+        data.predictions.length > 0
+      ) {
         setPredictions(data.predictions);
-        
+
         // Compare top prediction with current sign
         const topPrediction = data.predictions[0].sign;
         if (topPrediction.toLowerCase() === currentSign.toLowerCase()) {
@@ -448,7 +454,9 @@ export default function GamePage() {
           setMessage("Correct! Good job!");
         } else {
           setGameResult("incorrect");
-          setMessage(`Not quite! The model detected "${topPrediction}" instead of "${currentSign}"`);
+          setMessage(
+            `Not quite! The model detected "${topPrediction}" instead of "${currentSign}"`
+          );
         }
       } else {
         setMessage("No clear predictions received. Try again!");
@@ -481,24 +489,26 @@ export default function GamePage() {
 
         {/* Game result display */}
         {gameResult && (
-          <div 
+          <div
             className={`text-center py-8 mb-6 rounded-lg ${
-              gameResult === "correct" 
-                ? "bg-green-100 text-green-800" 
+              gameResult === "correct"
+                ? "bg-green-100 text-green-800"
                 : "bg-red-100 text-red-800"
             }`}
           >
-            <div className="text-5xl mb-4">{gameResult === "correct" ? "🎉" : "🤔"}</div>
+            <div className="text-5xl mb-4">
+              {gameResult === "correct" ? "🎉" : "🤔"}
+            </div>
             <h2 className="text-2xl font-bold mb-2">
               {gameResult === "correct" ? "Correct!" : "Try Again!"}
             </h2>
-            
+
             {predictions.length > 0 && (
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Model Predictions:</h3>
                 <div className="flex flex-col items-center gap-2">
                   {predictions.map((pred, idx) => (
-                    <div 
+                    <div
                       key={idx}
                       className={`px-3 py-2 rounded-lg ${
                         idx === 0 ? "bg-white/50 font-bold" : ""
@@ -510,7 +520,7 @@ export default function GamePage() {
                 </div>
               </div>
             )}
-            
+
             <button
               onClick={startOver}
               className="px-6 py-3 mt-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700"

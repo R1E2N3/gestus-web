@@ -423,22 +423,62 @@ export default function GamePage() {
     setGameResult(null);
 
     try {
+      // Make sure each frame's landmarks are in the expected format
+      // This is important for the API to process them correctly
+      const processedFrames = recordedFrames.map((frame) => {
+        // Each frame should already be in the proper format with:
+        // - 33 pose landmarks (x,y,z) = 99 values
+        // - 21 left hand landmarks (x,y,z) = 63 values
+        // - 21 right hand landmarks (x,y,z) = 63 values
+        // Total: 225 values
+
+        // Ensure the frame has the right length - pad with zeros if needed
+        const NUM_POSE_LANDMARKS = 33;
+        const NUM_HAND_LANDMARKS = 21;
+        const expectedLength =
+          (NUM_POSE_LANDMARKS + 2 * NUM_HAND_LANDMARKS) * 3;
+
+        if (frame.length !== expectedLength) {
+          console.warn(
+            `Frame has incorrect length: ${frame.length}, expected: ${expectedLength}`
+          );
+          // Create properly sized frame
+          const properFrame = new Array(expectedLength).fill(0);
+          // Copy available values
+          for (let i = 0; i < Math.min(frame.length, expectedLength); i++) {
+            properFrame[i] = frame[i];
+          }
+          return properFrame;
+        }
+
+        return frame;
+      });
+
       const response = await fetch("/api/process", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          landmarks: recordedFrames,
+          landmarks: processedFrames,
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Error: ${response.status}`);
+      // Check for non-JSON responses first
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const errorText = await response.text();
+        console.error("Server returned non-JSON response:", errorText);
+        throw new Error(
+          `Server error (${response.status}): The server returned an invalid response format`
+        );
       }
 
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Error: ${response.status}`);
+      }
 
       if (
         data.status === "success" &&

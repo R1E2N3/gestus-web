@@ -17,7 +17,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Send the landmarks data to the Gestus API
-    const response = await fetch("https://gestus-api.onrender.com/contribute", {
+    console.log("Sending data to Gestus API...");
+    const apiUrl =
+      process.env.GESTUS_API_URL ||
+      "https://gestus-api.onrender.com/contribute";
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -28,12 +32,35 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Error: ${response.status}`);
+    // Check for non-JSON responses first
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const errorText = await response.text();
+      console.error("API returned non-JSON response:", errorText);
+      return NextResponse.json(
+        {
+          status: "error",
+          error: `External API error (${response.status}): The API returned an invalid response format`,
+          details: errorText.substring(0, 500), // Include part of the error for debugging
+        },
+        { status: 502 } // Bad Gateway - appropriate for upstream service failure
+      );
     }
 
+    // Now we can safely parse as JSON
     const responseData = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          status: "error",
+          error: responseData.error || `API Error: ${response.status}`,
+          details: responseData,
+        },
+        { status: response.status }
+      );
+    }
+
     return NextResponse.json(responseData);
   } catch (error: any) {
     console.error("Error submitting contribution:", error);
@@ -41,6 +68,7 @@ export async function POST(request: NextRequest) {
       {
         status: "error",
         error: error.message || "Failed to submit contribution",
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 }
     );

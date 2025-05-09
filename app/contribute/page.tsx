@@ -429,9 +429,20 @@ export default function ContributePage() {
         }),
       });
 
+      // Check for non-JSON responses first
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const errorText = await response.text();
+        console.error("Server returned non-JSON response:", errorText);
+        throw new Error(
+          `Server error (${response.status}): The server returned an invalid response format`
+        );
+      }
+
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Error: ${response.status}`);
+        throw new Error(data.error || `Error: ${response.status}`);
       }
 
       // Show thank you screen
@@ -439,7 +450,11 @@ export default function ContributePage() {
       setMessage("Thank you for your contribution!");
     } catch (error) {
       console.error("Error submitting landmarks:", error);
-      setMessage(`Failed to submit: ${error.message || "Unknown error"}`);
+      setMessage(
+        `Failed to submit: ${
+          error.message || "Unknown error"
+        }. Check the browser console for details.`
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -9,6 +9,9 @@ import {
   initMediaPipe,
   extractLandmarks,
   drawLandmarks,
+  extractPoseLandmarks,
+  extractHandLandmarks,
+  debugLandmarks,
 } from "../utils/landmarkExtractor";
 
 // Import MediaPipe dependencies for drawing
@@ -118,7 +121,6 @@ export default function GamePage() {
       stopPreviewAnimation();
     };
   }, []);
-
   // Function to update the canvas with landmarks
   const updateCanvas = async () => {
     try {
@@ -340,79 +342,6 @@ export default function GamePage() {
     }
   };
 
-  // Extract pose landmarks from flat array
-  const extractPoseLandmarks = (landmarks: number[]) => {
-    const NUM_POSE_LANDMARKS = 33;
-    const poseLandmarks = [];
-
-    for (let i = 0; i < NUM_POSE_LANDMARKS; i++) {
-      const offset = i * 3;
-
-      // Check if this landmark has valid data
-      if (
-        landmarks[offset] !== 0 ||
-        landmarks[offset + 1] !== 0 ||
-        landmarks[offset + 2] !== 0
-      ) {
-        poseLandmarks.push({
-          x: landmarks[offset] || 0,
-          y: landmarks[offset + 1] || 0,
-          z: landmarks[offset + 2] || 0,
-        });
-      }
-    }
-
-    return poseLandmarks;
-  };
-
-  // Extract hand landmarks from flat array
-  const extractHandLandmarks = (landmarks: number[]) => {
-    const NUM_POSE_LANDMARKS = 33;
-    const NUM_HAND_LANDMARKS = 21;
-    const hands = [];
-
-    // Extract left hand landmarks
-    const leftHandLandmarks = [];
-    const leftHandStartOffset = NUM_POSE_LANDMARKS * 3;
-
-    let hasLeftHand = false;
-    for (let i = 0; i < NUM_HAND_LANDMARKS; i++) {
-      const offset = leftHandStartOffset + i * 3;
-      const x = landmarks[offset] || 0;
-      const y = landmarks[offset + 1] || 0;
-      const z = landmarks[offset + 2] || 0;
-
-      if (x !== 0 || y !== 0 || z !== 0) {
-        hasLeftHand = true;
-      }
-
-      leftHandLandmarks.push({ x, y, z });
-    }
-
-    // Extract right hand landmarks
-    const rightHandLandmarks = [];
-    const rightHandStartOffset = leftHandStartOffset + NUM_HAND_LANDMARKS * 3;
-
-    let hasRightHand = false;
-    for (let i = 0; i < NUM_HAND_LANDMARKS; i++) {
-      const offset = rightHandStartOffset + i * 3;
-      const x = landmarks[offset] || 0;
-      const y = landmarks[offset + 1] || 0;
-      const z = landmarks[offset + 2] || 0;
-
-      if (x !== 0 || y !== 0 || z !== 0) {
-        hasRightHand = true;
-      }
-
-      rightHandLandmarks.push({ x, y, z });
-    }
-
-    if (hasLeftHand) hands.push(leftHandLandmarks);
-    if (hasRightHand) hands.push(rightHandLandmarks);
-
-    return hands;
-  };
-
   // Submit landmarks to the API for processing
   const processLandmarks = async () => {
     if (!currentSign || recordedFrames.length === 0) {
@@ -531,13 +460,16 @@ export default function GamePage() {
       <main className="container mx-auto px-4 pt-24 pb-10 max-w-5xl">
         <div className="flex flex-col items-center">
           {/* Page title */}
-          <motion.h1 
+          <motion.h1
             className="text-3xl md:text-4xl font-bold mb-6 text-center"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Gestus <span className="bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">Game</span>
+            Gestus{" "}
+            <span className="bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
+              Game
+            </span>
           </motion.h1>
 
           {/* Game result display */}
@@ -565,8 +497,8 @@ export default function GamePage() {
                       <div
                         key={idx}
                         className={`px-3 py-2 rounded-lg ${
-                          idx === 0 
-                            ? "bg-white font-bold shadow-sm" 
+                          idx === 0
+                            ? "bg-white font-bold shadow-sm"
                             : "bg-white/50"
                         }`}
                       >
@@ -608,19 +540,26 @@ export default function GamePage() {
                     <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                       1
                     </span>
-                    <span>Press "Start Recording" and perform the sign shown above</span>
+                    <span>
+                      Press "Start Recording" and perform the sign shown above
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                       2
                     </span>
-                    <span>Stop the recording when you're done to preview your sign</span>
+                    <span>
+                      Stop the recording when you're done to preview your sign
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                       3
                     </span>
-                    <span>Click "Check My Sign" to see if our AI recognizes your sign correctly</span>
+                    <span>
+                      Click "Check My Sign" to see if our AI recognizes your
+                      sign correctly
+                    </span>
                   </li>
                 </ul>
               </motion.div>
@@ -637,7 +576,7 @@ export default function GamePage() {
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
                     {currentSign}
                   </h1>
-                  <button 
+                  <button
                     onClick={handleSkipSign}
                     className="mt-4 text-sm text-[#009fe3] hover:underline"
                     disabled={isLoadingSign || isRecording}
@@ -660,7 +599,7 @@ export default function GamePage() {
               )}
 
               {/* Camera selection button */}
-              <motion.div 
+              <motion.div
                 className="mb-4 w-full max-w-2xl flex justify-end"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -670,8 +609,17 @@ export default function GamePage() {
                   className="text-sm text-[#009fe3] flex items-center"
                   onClick={() => setShowCameraSelect(!showCameraSelect)}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                   {showCameraSelect ? "Hide Camera Options" : "Change Camera"}
                 </button>
@@ -699,7 +647,8 @@ export default function GamePage() {
                     )}
                     {devices.map((device) => (
                       <option key={device.deviceId} value={device.deviceId}>
-                        {device.label || `Camera ${device.deviceId.slice(0, 5)}...`}
+                        {device.label ||
+                          `Camera ${device.deviceId.slice(0, 5)}...`}
                       </option>
                     ))}
                   </select>
@@ -722,22 +671,22 @@ export default function GamePage() {
                         className="absolute inset-0 w-full h-full object-cover"
                         playsInline
                         muted
-                        style={{ 
-                          transform: 'scaleX(-1)', // Mirror horizontally for more intuitive interaction
-                          WebkitTransform: 'scaleX(-1)',
+                        style={{
+                          transform: "scaleX(-1)", // Mirror horizontally for more intuitive interaction
+                          WebkitTransform: "scaleX(-1)",
                         }}
                       />
-                      
+
                       {/* Canvas for drawing landmarks */}
                       <canvas
                         ref={canvasRef}
                         className="absolute inset-0 w-full h-full z-10"
-                        style={{ 
-                          transform: 'scaleX(-1)', // Mirror horizontally to match video
-                          WebkitTransform: 'scaleX(-1)',
+                        style={{
+                          transform: "scaleX(-1)", // Mirror horizontally to match video
+                          WebkitTransform: "scaleX(-1)",
                         }}
                       />
-                      
+
                       {/* Recording indicator */}
                       {isCapturing && (
                         <div className="absolute top-4 right-4 flex items-center z-20">
@@ -745,21 +694,41 @@ export default function GamePage() {
                           <span className="text-red-500 font-medium">REC</span>
                         </div>
                       )}
-                      
+
                       {/* Placeholder when not recording */}
                       {!isCapturing && (
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-center z-10">
                           {mediapipeReady && currentSign ? (
                             <div className="px-6">
-                              <p className="text-lg font-semibold mb-2">Ready to record:</p>
-                              <p className="text-3xl font-bold mb-4">{currentSign}</p>
+                              <p className="text-lg font-semibold mb-2">
+                                Ready to record:
+                              </p>
+                              <p className="text-3xl font-bold mb-4">
+                                {currentSign}
+                              </p>
                               <p className="text-sm">Click Start to begin</p>
                             </div>
                           ) : (
                             <div className="flex items-center">
-                              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              <svg
+                                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
                               </svg>
                               Loading...
                             </div>
@@ -773,16 +742,20 @@ export default function GamePage() {
                       <canvas
                         ref={previewCanvasRef}
                         className="absolute inset-0 w-full h-full z-10"
-                        style={{ 
-                          transform: 'scaleX(-1)', // Mirror horizontally for consistency
-                          WebkitTransform: 'scaleX(-1)',
+                        style={{
+                          transform: "scaleX(-1)", // Mirror horizontally for consistency
+                          WebkitTransform: "scaleX(-1)",
                         }}
                       />
                       {!isPreviewPlaying && (
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-center z-20 px-6">
                           <div>
-                            <p className="text-lg font-semibold mb-2">Preview Ready</p>
-                            <p className="text-sm mb-4">Click Play Preview to view your recording</p>
+                            <p className="text-lg font-semibold mb-2">
+                              Preview Ready
+                            </p>
+                            <p className="text-sm mb-4">
+                              Click Play Preview to view your recording
+                            </p>
                           </div>
                         </div>
                       )}
@@ -813,29 +786,49 @@ export default function GamePage() {
                     >
                       {isPreviewPlaying ? (
                         <span className="flex items-center justify-center">
-                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           Pause Preview
                         </span>
                       ) : (
                         <span className="flex items-center justify-center">
-                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 mr-2"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                           Play Preview
                         </span>
                       )}
                     </motion.button>
-                    
+
                     {/* Frame counter */}
                     <div className="bg-gray-100 rounded-lg px-4 py-3 text-center">
                       Frame: {currentPreviewFrame + 1} / {recordedFrames.length}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-gray-500 whitespace-nowrap">Preview Speed:</span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">
+                      Preview Speed:
+                    </span>
                     <select
                       value={previewSpeed}
                       onChange={(e) => setPreviewSpeed(Number(e.target.value))}
@@ -850,7 +843,7 @@ export default function GamePage() {
               )}
 
               {/* Controls */}
-              <motion.div 
+              <motion.div
                 className="flex flex-wrap gap-4 justify-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -858,27 +851,50 @@ export default function GamePage() {
               >
                 <motion.button
                   className={`px-8 py-3 rounded-full font-bold text-white shadow-lg flex items-center ${
-                    isCapturing ? "bg-red-500 hover:bg-red-600" : "bg-[#009fe3] hover:bg-[#0084bd]"
+                    isCapturing
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-[#009fe3] hover:bg-[#0084bd]"
                   }`}
                   onClick={toggleCapture}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  disabled={!mediapipeReady || devices.length === 0 || !currentSign}
+                  disabled={
+                    !mediapipeReady || devices.length === 0 || !currentSign
+                  }
                 >
                   <span className="mr-2">
                     {isCapturing ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <rect x="6" y="6" width="8" height="8" fill="currentColor" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <rect
+                          x="6"
+                          y="6"
+                          width="8"
+                          height="8"
+                          fill="currentColor"
+                        />
                       </svg>
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
                         <circle cx="10" cy="10" r="6" fill="currentColor" />
                       </svg>
                     )}
                   </span>
-                  {isCapturing ? "Stop Recording" : recordedFrames.length == 0 ? "Start Recording" : "Record Again"}
-                </motion.button>
-
+                  {isCapturing
+                    ? "Stop Recording"
+                    : recordedFrames.length == 0
+                    ? "Start Recording"
+                    : "Record Again"}
+                </motion.button>{" "}
                 {recordedFrames.length > 0 && (
                   <motion.button
                     className="px-8 py-3 rounded-full font-bold text-white bg-[#ffd23f] hover:bg-[#f2c935] shadow-lg flex items-center"
@@ -889,11 +905,66 @@ export default function GamePage() {
                     style={{ opacity: isSubmitting ? 0.5 : 1 }}
                   >
                     <span className="mr-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </span>
                     {isSubmitting ? "Processing..." : "Check My Sign"}
+                  </motion.button>
+                )}
+                {/* DEBUG button - shows landmark information in console */}
+                {recordedFrames.length > 0 && (
+                  <motion.button
+                    className="px-4 py-2 rounded-full font-medium bg-gray-200 hover:bg-gray-300 shadow-sm flex items-center"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      console.log("DEBUG: Landmark data");
+                      console.log(`Total Frames: ${recordedFrames.length}`);
+
+                      // Debug first, middle and last frames
+                      if (recordedFrames.length > 0) {
+                        const firstFrame = recordedFrames[0];
+                        const middleFrame =
+                          recordedFrames[Math.floor(recordedFrames.length / 2)];
+                        const lastFrame =
+                          recordedFrames[recordedFrames.length - 1];
+
+                        console.log("First frame:");
+                        debugLandmarks(firstFrame);
+
+                        console.log("Middle frame:");
+                        debugLandmarks(middleFrame);
+
+                        console.log("Last frame:");
+                        debugLandmarks(lastFrame);
+                      }
+                    }}
+                  >
+                    <span className="mr-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </span>
+                    Debug Data
                   </motion.button>
                 )}
               </motion.div>

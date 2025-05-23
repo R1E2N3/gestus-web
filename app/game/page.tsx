@@ -31,6 +31,7 @@ export default function GamePage() {
     null
   );
   const [showCameraSelect, setShowCameraSelect] = useState(false);
+  const [countdown, setCountdown] = useState<number>(0); // Added for countdown timer
 
   // References
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -108,6 +109,10 @@ export default function GamePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Timer and recording duration constants
+  const COUNTDOWN_SECONDS = 3;
+  const RECORDING_SECONDS = 5;
+
   // Start capturing video
   const startCapture = async () => {
     recordedVideoRef.current = null; // Clear previous video
@@ -150,11 +155,30 @@ export default function GamePage() {
       }
       videoRecorderRef.current = createVideoRecorder(streamRef.current);
 
-      videoRecorderRef.current.start();
-      setIsCapturing(true);
-      setMessage(
-        `Recording sign "${currentSign}"... Press Stop Recording when done.`
-      );
+      // Start countdown
+      setCountdown(COUNTDOWN_SECONDS);
+      setMessage(`Get ready! Recording in ${COUNTDOWN_SECONDS}...`);
+
+      let count = COUNTDOWN_SECONDS;
+      const countdownInterval = setInterval(() => {
+        count--;
+        setCountdown(count);
+        if (count > 0) {
+          setMessage(`Get ready! Recording in ${count}...`);
+        } else {
+          clearInterval(countdownInterval);
+          setMessage(
+            `Recording sign "${currentSign}" for ${RECORDING_SECONDS} seconds...`
+          );
+          videoRecorderRef.current?.start();
+          setIsCapturing(true);
+
+          // Automatically stop recording after RECORDING_SECONDS
+          setTimeout(() => {
+            stopCapture();
+          }, RECORDING_SECONDS * 1000);
+        }
+      }, 1000);
     } catch (error) {
       console.error("Error starting video capture:", error);
       setMessage(
@@ -205,7 +229,11 @@ export default function GamePage() {
   // Toggle capture state
   const toggleCapture = () => {
     if (isCapturing) {
+      // This case should ideally not be reached if recording stops automatically
       stopCapture();
+    } else if (countdown > 0) {
+      // If countdown is in progress, do nothing or allow cancellation (optional)
+      return;
     } else {
       startCapture();
     }
@@ -431,6 +459,11 @@ export default function GamePage() {
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
                     {currentSign}
                   </h1>
+                  {countdown > 0 && (
+                    <div className="mt-4 text-6xl font-bold text-[#009fe3]">
+                      {countdown}
+                    </div>
+                  )}
                   <button
                     onClick={handleSkipSign}
                     className="mt-4 text-sm text-[#009fe3] hover:underline"
@@ -648,6 +681,19 @@ export default function GamePage() {
                           fill="currentColor"
                         />
                       </svg>
+                    ) : countdown > 0 ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 animate-spin" // Simple spin animation for countdown
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v4a1 1 0 102 0V5zM10 15a1 1 0 100-2 1 1 0 000 2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     ) : (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -660,12 +706,14 @@ export default function GamePage() {
                     )}
                   </span>
                   {isCapturing
-                    ? "Stop Recording"
+                    ? "Recording..."
+                    : countdown > 0
+                    ? `Starting in ${countdown}...`
                     : recordedVideoRef.current
                     ? "Record Again"
                     : "Start Recording"}
                 </motion.button>{" "}
-                {recordedVideoRef.current && !isCapturing && (
+                {recordedVideoRef.current && !isCapturing && !isSubmitting && (
                   <motion.button
                     className="px-8 py-3 rounded-full font-bold text-white bg-[#ffd23f] hover:bg-[#f2c935] shadow-lg flex items-center"
                     whileHover={{ scale: 1.05 }}

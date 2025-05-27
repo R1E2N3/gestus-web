@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { motion } from "framer-motion"
-import HandSymbolSmall from "./HandSymbolSmall"
-import LanguageToggle from "./LanguageToggle"
-import { useTranslation } from "../hooks/useTranslation"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import HandSymbolSmall from "./HandSymbolSmall";
+import LanguageToggle from "./LanguageToggle";
+import { useTranslation } from "../hooks/useTranslation";
 
-type NavLinkKey = "home" | "solution" | "about" | "game" | "contribute"
+type NavLinkKey = "home" | "solution" | "about" | "game" | "contribute";
 
 interface NavLink {
-  href: string
-  key: NavLinkKey
-  emoji: string
+  href: string;
+  key: NavLinkKey;
+  emoji: string;
 }
 
 const navLinks: NavLink[] = [
@@ -21,17 +21,17 @@ const navLinks: NavLink[] = [
   { href: "/about", key: "about", emoji: "👋" },
   { href: "/game", key: "game", emoji: "🎮" },
   { href: "/contribute", key: "contribute", emoji: "✨" },
-]
+];
 
 export default function PlayfulNav() {
-  const [activeLink, setActiveLink] = useState("/")
-  const [hoverLink, setHoverLink] = useState<string | null>(null)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const t = useTranslation()
+  const [activeLink, setActiveLink] = useState("/");
+  const [hoverLink, setHoverLink] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const t = useTranslation();
 
   useEffect(() => {
-    setActiveLink(window.location.pathname)
-  }, [])
+    setActiveLink(window.location.pathname);
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-md">
@@ -46,7 +46,6 @@ export default function PlayfulNav() {
               </span>
             </Link>
           </div>
-
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => (
@@ -59,7 +58,9 @@ export default function PlayfulNav() {
               >
                 <motion.div
                   className={`absolute inset-0 rounded-md ${
-                    activeLink === link.href ? "bg-[#ffd23f]/20" : "bg-transparent"
+                    activeLink === link.href
+                      ? "bg-[#ffd23f]/20"
+                      : "bg-transparent"
                   }`}
                   animate={{
                     scale: hoverLink === link.href ? 1.05 : 1,
@@ -68,14 +69,19 @@ export default function PlayfulNav() {
                 />
                 <span className="relative flex items-center">
                   <span className="mr-1">{link.emoji}</span>
-                  <span className={`${activeLink === link.href ? "text-[#009fe3] font-semibold" : "text-gray-700"}`}>
+                  <span
+                    className={`${
+                      activeLink === link.href
+                        ? "text-[#009fe3] font-semibold"
+                        : "text-gray-700"
+                    }`}
+                  >
                     {t.nav.links[link.key]}
                   </span>
                 </span>
               </Link>
             ))}
           </div>
-
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button
@@ -91,7 +97,12 @@ export default function PlayfulNav() {
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
               <svg
                 className={`${isMenuOpen ? "block" : "hidden"} h-6 w-6`}
@@ -101,17 +112,21 @@ export default function PlayfulNav() {
                 stroke="currentColor"
                 aria-hidden="true"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
-          </div>
-
+          </div>{" "}
           {/* Language Toggle and Try Now Button */}
-          <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <LanguageToggle />
             <a
               href="/game"
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors w-[120px]"
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-[#009fe3] hover:bg-[#0080b3] transition-colors min-w-[100px]"
             >
               {t.nav.tryNow}
             </a>
@@ -137,7 +152,7 @@ export default function PlayfulNav() {
             </Link>
           ))}
         </div>
-        
+
         <div className="px-5 pt-2 pb-5">
           <a
             href="/game"
@@ -148,5 +163,5 @@ export default function PlayfulNav() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

@@ -3,32 +3,67 @@ import { API_BASE_URL } from "@/app/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
-    // Get JSON data from the request
-    const data = await request.json();
+    // Get FormData from the request
+    const formData = await request.formData();
+    const videoFile = formData.get("video") as File | null;
+    const sign = formData.get("sign") as string | null;
 
     // Check if we have the required data
-    if (!data || !data.sign || !data.landmarks) {
+    if (!videoFile) {
       return NextResponse.json(
         {
           status: "error",
-          error: "Missing required data (sign or landmarks)",
+          error: "Missing video file",
         },
         { status: 400 }
       );
     }
 
-    // Send the landmarks data to the Gestus API
-    console.log("Sending data to Gestus API...");
+    if (!sign) {
+      return NextResponse.json(
+        {
+          status: "error",
+          error: "Missing sign name",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log(
+      "Received contribution:",
+      "Sign:",
+      sign,
+      "Video:",
+      videoFile.name,
+      "Size:",
+      videoFile.size,
+      "Type:",
+      videoFile.type
+    );
+
+    // Send the video data to the Gestus API
+    console.log("Sending video to Gestus API...");
     const apiUrl = `${API_BASE_URL}/contribute`;
+
+    if (!API_BASE_URL) {
+      console.error("API_BASE_URL environment variable is not set.");
+      return NextResponse.json(
+        {
+          status: "error",
+          error: "Backend API URL is not configured.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Create FormData for the backend
+    const backendFormData = new FormData();
+    backendFormData.append("video", videoFile, videoFile.name);
+    backendFormData.append("sign", sign);
+
     const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sign: data.sign,
-        landmarks: data.landmarks,
-      }),
+      body: backendFormData,
     });
 
     // Check for non-JSON responses first

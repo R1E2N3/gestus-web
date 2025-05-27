@@ -1,92 +1,46 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { CSSProperties } from "react"
+import { motion } from "framer-motion";
+import { CSSProperties } from "react";
 
 interface HandSymbolProps {
-  size?: number
-  animated?: boolean
-  color?: string
-  className?: string
-  style?: CSSProperties
+  size?: number;
+  animated?: boolean;
+  color?: string;
+  className?: string;
+  style?: CSSProperties;
 }
 
-export default function HandSymbol({ 
-  size = 100, 
-  animated = true, 
-  color = "#ffd23f", 
+export default function HandSymbol({
+  size = 100,
+  animated = true,
+  color = "#ffd23f",
   className = "",
-  style = {} 
+  style = {},
 }: HandSymbolProps) {
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 100 100" 
-      fill="none" 
+    <svg
+      width={size}
+      height={(size * 282) / 196}
+      viewBox="0 0 196 282"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      style={style}
     >
-      {/* Palm */}
-      <motion.circle
-        cx="50"
-        cy="50"
-        r="30"
-        fill={color}
-        stroke="#ffffff"
-        strokeWidth="2"
-        initial={animated ? { scale: 0.8 } : { scale: 1 }}
-        animate={animated ? { scale: [0.8, 1, 0.8] } : { scale: 1 }}
-        transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
+      <path
+        d="M67 274.449C48.5 274.449 37.5 267.5 37.5 267.5C37.5 267.5 5.7831 250.949 10.7831 193.449C5.2831 173.949 -0.216904 128.949 40.7831 134.449C47.0757 110.247 73.5183 117.909 78.8284 121.599C79.0034 121.72 79.1555 121.838 79.2831 121.949C84.1164 113.449 97.3812 101.151 111.783 119.949C113.315 121.949 111.783 33.4489 123.283 15.9489C128.212 8.44805 133.5 7 137.5 7C141.5 7 150.642 10.2252 151.283 18.9487L153.783 126.949C165.783 97.9488 191.783 101.449 187.783 126.949C187.783 129.449 182.383 137.749 184.783 204.949C184.783 237.949 167.783 274.449 119.283 274.449"
+        stroke="#009FE3"
+        stroke-width="14"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
-
-      {/* Fingers */}
-      <motion.path
-        d="M50 20 L50 5"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-      />
-      <motion.path
-        d="M65 25 L75 15"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.2 }}
-      />
-      <motion.path
-        d="M75 40 L90 35"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.4 }}
-      />
-      <motion.path
-        d="M35 25 L25 15"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.6 }}
-      />
-      <motion.path
-        d="M25 40 L10 35"
-        stroke="#009fe3"
-        strokeWidth="8"
-        strokeLinecap="round"
-        initial={animated ? { opacity: 0.6 } : { opacity: 1 }}
-        animate={animated ? { opacity: [0.6, 1, 0.6] } : { opacity: 1 }}
-        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 0.8 }}
+      <path
+        d="M67 274.449C48.5 274.449 37.5 267.5 37.5 267.5C37.5 267.5 5.7831 250.949 10.7831 193.449C5.2831 173.949 -0.216904 128.949 40.7831 134.449C47.0757 110.247 73.5183 117.909 78.8284 121.599C79.0034 121.72 79.1555 121.838 79.2831 121.949C84.1164 113.449 97.3812 101.151 111.783 119.949C113.315 121.949 111.783 33.4489 123.283 15.9489C128.212 8.44805 133.5 7 137.5 7C141.5 7 150.642 10.2252 151.283 18.9487L153.783 126.949C165.783 97.9488 191.783 101.449 187.783 126.949C187.783 129.449 182.383 137.749 184.783 204.949C184.783 237.949 167.783 274.449 119.283 274.449"
+        stroke="#7ED957"
+        stroke-opacity="0.2"
+        stroke-width="14"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
     </svg>
-  )
+  );
 }

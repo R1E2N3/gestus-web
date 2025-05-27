@@ -32,6 +32,12 @@ export default function ContributePage() {
   const [isSubmittingModal, setIsSubmittingModal] = useState(false);
   const [hasStream, setHasStream] = useState(false);
 
+  // States for sample video functionality
+  const [showSampleVideo, setShowSampleVideo] = useState(false);
+  const [sampleVideoUrl, setSampleVideoUrl] = useState<string>("");
+  const [isLoadingSampleVideo, setIsLoadingSampleVideo] = useState(false);
+  const [sampleVideoError, setSampleVideoError] = useState<string>("");
+
   // References
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -361,6 +367,45 @@ export default function ContributePage() {
     fetchRandomSign();
   };
 
+  // Fetch sample video for current sign
+  const fetchSampleVideo = async () => {
+    if (!currentSign) return;
+
+    setIsLoadingSampleVideo(true);
+    setSampleVideoError("");
+
+    try {
+      const response = await fetch(
+        `/api/sample-video?sign=${encodeURIComponent(currentSign)}`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setSampleVideoError("No sample video available for this sign");
+        } else {
+          throw new Error("Failed to fetch sample video");
+        }
+        return;
+      }
+
+      const data = await response.json();
+      setSampleVideoUrl(data.video_url);
+      setShowSampleVideo(true);
+    } catch (error) {
+      console.error("Error fetching sample video:", error);
+      setSampleVideoError("Failed to load sample video");
+    } finally {
+      setIsLoadingSampleVideo(false);
+    }
+  };
+
+  // Close sample video modal
+  const closeSampleVideo = () => {
+    setShowSampleVideo(false);
+    setSampleVideoUrl("");
+    setSampleVideoError("");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#f0f9ff]">
       <PlayfulNav />
@@ -458,17 +503,43 @@ export default function ContributePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <h2 className="text-xl text-gray-500 mb-2">Please sign:</h2>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
+                  <h2 className="text-xl text-gray-500 mb-2">Please sign:</h2>                  <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
                     {currentSign}
                   </h1>
-                  <button
-                    onClick={handleSkipSign}
-                    className="mt-4 text-sm text-[#009fe3] hover:underline"
-                    disabled={isLoadingSign || isCapturing || isSubmitting}
-                  >
-                    {isLoadingSign ? "Loading..." : "Skip this sign"}
-                  </button>
+                  <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
+                    <button
+                      onClick={fetchSampleVideo}
+                      className="px-4 py-2 text-sm bg-[#009fe3] text-white rounded-lg hover:bg-[#0084bd] flex items-center disabled:opacity-50"
+                      disabled={isLoadingSign || isCapturing || isSubmitting || isLoadingSampleVideo}
+                    >
+                      {isLoadingSampleVideo ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-9 4h10a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                          </svg>
+                          View Sample
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleSkipSign}
+                      className="text-sm text-[#009fe3] hover:underline"
+                      disabled={isLoadingSign || isCapturing || isSubmitting}
+                    >
+                      {isLoadingSign ? "Loading..." : "Skip this sign"}
+                    </button>
+                  </div>
+                  {sampleVideoError && (
+                    <p className="mt-2 text-sm text-orange-600">{sampleVideoError}</p>
+                  )}
                 </motion.div>
               )}
               {/* Message display */}
@@ -852,6 +923,75 @@ export default function ContributePage() {
                 <div className="w-4 h-4 mr-2 border-2 border-[#009fe3] border-t-transparent rounded-full animate-spin"></div>
                 Processing gestures...
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      {/* Sample Video Modal */}
+      {showSampleVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+          <motion.div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Sample Video: <span className="text-[#009fe3]">{currentSign}</span>
+              </h2>
+              <button
+                onClick={closeSampleVideo}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {sampleVideoUrl ? (
+                <div className="space-y-4">
+                  <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                    <video
+                      src={sampleVideoUrl}
+                      className="w-full h-full object-cover"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      onLoadedMetadata={(e) => {
+                        // Auto-play the sample video when loaded
+                        e.currentTarget.play().catch(console.error);
+                      }}
+                    />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-600 mb-4">
+                      This is how to perform the sign for "<strong>{currentSign}</strong>". 
+                      Watch carefully and try to replicate the movement when recording your own version.
+                    </p>
+                    <button
+                      onClick={closeSampleVideo}
+                      className="px-6 py-2 bg-[#009fe3] text-white rounded-lg hover:bg-[#0084bd] transition-colors"
+                    >
+                      Got it, let's record!
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                  <p className="text-gray-600">Loading sample video...</p>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

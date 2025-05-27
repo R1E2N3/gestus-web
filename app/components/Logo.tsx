@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { CSSProperties } from "react";
 
-interface HandSymbolProps {
+interface LogoProps {
   size?: number;
   animated?: boolean;
   color?: string;
@@ -11,13 +11,13 @@ interface HandSymbolProps {
   style?: CSSProperties;
 }
 
-export default function HandSymbol({
+export default function Logo({
   size = 100,
   animated = true,
   color = "#ffd23f",
   className = "",
   style = {},
-}: HandSymbolProps) {
+}: LogoProps) {
   return (
     <svg
       width={size}

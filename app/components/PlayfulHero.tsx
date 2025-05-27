@@ -41,11 +41,10 @@ export default function PlayfulHero() {
   }, [t.hero.words.length]);
 
   return (
-    <section className="relative min-h-screen pt-20 overflow-hidden bg-gradient-to-b from-white to-[#f8f9fa]">
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white to-[#f8f9fa]">
       {/* Colorful circles */}
       <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#009fe3]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#7ed957]/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/2 w-64 h-64 bg-[#000000]/10 rounded-full blur-3xl" />
         <div className="absolute top-1/2 right-1/3 w-48 h-48 bg-[#ffd23f]/10 rounded-full blur-3xl" />
       </div>{" "}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24">
@@ -91,20 +90,21 @@ export default function PlayfulHero() {
                 className="flex justify-center lg:justify-start items-center mb-8"
               >
                 <div className="flex items-center">
-                  <span className="text-xl text-gray-600 mr-2">
+                  <div className="text-xl text-gray-600 mr-2">
                     {t.hero.makeIt}
-                  </span>
-                  <div className="w-32 h-10 relative">
-                    <motion.span
+                  </div>
+
+                  <div className="relative">
+                    <motion.div
                       key={currentWordIndex}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.5 }}
-                      className="text-2xl font-bold text-[#009fe3] absolute left-0"
+                      className="text-xl font-bold text-[#009fe3]"
                     >
                       {t.hero.words[currentWordIndex]}
-                    </motion.span>
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>
@@ -118,7 +118,7 @@ export default function PlayfulHero() {
               >
                 <a
                   href="/prototype"
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#009fe3] to-[#ffd23f] text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="inline-flex items-center px-8 py-4 bg-[#009fe3] text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   {t.hero.cta}
                   <svg
@@ -140,7 +140,7 @@ export default function PlayfulHero() {
             </motion.div>
           </div>
 
-          <div className="relative flex justify-center lg:justify-end">
+          <div className="relative flex  mx-auto lg:ml-auto">
             <motion.div
               className="relative z-10 bg-white rounded-3xl shadow-xl p-6 md:p-10 max-w-lg w-full"
               initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
@@ -150,7 +150,7 @@ export default function PlayfulHero() {
               whileHover={{ rotate: -2, scale: 1.02 }}
             >
               <div className="aspect-w-4 aspect-h-3 relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#ffd23f]/20 to-[#009fe3]/20 rounded-lg overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#000000]/20 to-[#009fe3]/20 rounded-lg overflow-hidden">
                   {/* Animated hand signs */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div
@@ -220,55 +220,13 @@ export default function PlayfulHero() {
               transition={{ delay: 0.7, type: "spring" }}
             />
             <motion.div
-              className="absolute -bottom-4 -left-4 w-8 h-8 bg-[#009fe3] rounded-full"
+              className="absolute -bottom-3 -left-3 w-8 h-8 bg-[#009fe3] rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.8, type: "spring" }}
             />
           </div>
         </div>
-      </div>
-      {/* Animated eyes that follow cursor */}
-      {/* Green ellipse for smooth transition */}
-      <div className="absolute -bottom-20 left-0 right-0 z-0 overflow-hidden">
-        <svg
-          viewBox="0 0 1440 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-          width="100%"
-          height="120"
-        >
-          <motion.ellipse
-            cx="720"
-            cy="60"
-            rx="720"
-            ry="120"
-            fill="#7ed957"
-            initial={{ scaleX: 0.8, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ duration: 1 }}
-          />
-        </svg>
-      </div>
-      {/* Decorative bottom wave */}
-      <div className="absolute bottom-0 left-0 right-0 z-0">
-        <svg
-          viewBox="0 0 1440 320"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="none"
-          width="100%"
-          height="320"
-        >
-          <motion.path
-            d="M0,96L48,106.7C96,117,192,139,288,154.7C384,171,480,181,576,170.7C672,160,768,128,864,122.7C960,117,1056,139,1152,154.7C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-            fill="#7ed957"
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1 }}
-          />
-        </svg>
       </div>
       {/* Bouncing arrow */}
       <motion.div

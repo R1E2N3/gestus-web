@@ -32,12 +32,57 @@ export default function GamePage() {
   );
   const [showCameraSelect, setShowCameraSelect] = useState(false);
   const [countdown, setCountdown] = useState<number>(0); // Added for countdown timer
-
-  // References
+  const [recordingProgress, setRecordingProgress] = useState<number>(0);
+  const [isSubmittingModal, setIsSubmittingModal] = useState(false);
+  const [hasStream, setHasStream] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const videoRecorderRef = useRef<CustomVideoRecorder | null>(null); // Updated type
   const recordedVideoRef = useRef<Blob | null>(null);
+  const recordedVideoURLRef = useRef<string | null>(null);
+
+  // Start camera stream without recording
+  const startCameraStream = async (deviceId?: string) => {
+    console.log("startCameraStream called with deviceId:", deviceId);
+    try {
+      if (streamRef.current) {
+        streamRef.current
+          .getTracks()
+          .forEach((track: MediaStreamTrack) => track.stop());
+        streamRef.current = null;
+        setHasStream(false);
+      }
+
+      console.log("Requesting camera access...");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: deviceId ? { exact: deviceId } : undefined,
+          width: 640,
+          height: 480,
+        },
+        audio: true,
+      });
+      streamRef.current = stream;
+      setHasStream(true);
+      console.log("Camera stream obtained:", stream);
+
+      if (videoRef.current && streamRef.current) {
+        console.log("Setting video source and playing...");
+        videoRef.current.srcObject = streamRef.current;
+        videoRef.current.muted = true;
+        await videoRef.current.play();
+        console.log("Video is now playing");
+      }
+    } catch (error) {
+      console.error("Error starting camera stream:", error);
+      setMessage(
+        `Failed to start camera: ${
+          (error as Error).message
+        }. Please check camera permissions.`
+      );
+      setHasStream(false);
+    }
+  };
 
   // Fetch a random sign from the API
   const fetchRandomSign = async () => {
@@ -67,29 +112,36 @@ export default function GamePage() {
       fetchRandomSign();
     }
   };
-
   // Get camera devices when component mounts
   useEffect(() => {
+    console.log("Component mounted, starting initialization...");
     fetchRandomSign(); // Fetch sign initially
 
-    navigator.mediaDevices
-      .enumerateDevices()
-      .then((devices) => {
+    const initializeCamera = async () => {
+      try {
+        console.log("Getting media devices...");
+        const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(
           (device) => device.kind === "videoinput"
         );
+        console.log("Found video devices:", videoDevices);
         setDevices(videoDevices);
+
         if (videoDevices.length > 0) {
           setSelectedDevice(videoDevices[0].deviceId);
+          console.log("Setting selected device and starting camera...");
+          // Start camera stream immediately
+          await startCameraStream(videoDevices[0].deviceId);
         } else {
           setMessage("No camera devices found. Please connect a camera.");
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error enumerating devices:", err);
         setMessage("Failed to get camera devices. Please check permissions.");
-      });
+      }
+    };
 
+    initializeCamera();
     return () => {
       // Cleanup: stop capture and release stream
       if (isCapturing && videoRecorderRef.current) {
@@ -105,50 +157,36 @@ export default function GamePage() {
           .forEach((track: MediaStreamTrack) => track.stop()); // Explicitly type track
         streamRef.current = null;
       }
+      // Clean up video URL on unmount
+      if (recordedVideoURLRef.current) {
+        URL.revokeObjectURL(recordedVideoURLRef.current);
+        recordedVideoURLRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Timer and recording duration constants
   const COUNTDOWN_SECONDS = 3;
-  const RECORDING_SECONDS = 5;
-
-  // Start capturing video
+  const RECORDING_SECONDS = 5; // Start capturing video
   const startCapture = async () => {
     recordedVideoRef.current = null; // Clear previous video
+    setRecordingProgress(0); // Reset progress
     setGameResult(null);
     setPredictions([]);
+    // Clean up previous URL to prevent memory leaks
+    if (recordedVideoURLRef.current) {
+      URL.revokeObjectURL(recordedVideoURLRef.current);
+      recordedVideoURLRef.current = null;
+    }
 
     try {
-      // Ensure stream is active, or get it
-      if (streamRef.current) {
-        // Ensure existing stream is stopped before starting a new one if device changes
-        streamRef.current
-          .getTracks()
-          .forEach((track: MediaStreamTrack) => track.stop()); // Explicitly type track
-        streamRef.current = null;
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          deviceId: selectedDevice ? { exact: selectedDevice } : undefined,
-          width: 640,
-          height: 480,
-        },
-        audio: true,
-      });
-      streamRef.current = stream;
-
-      if (videoRef.current && streamRef.current) {
-        videoRef.current.srcObject = streamRef.current;
-        videoRef.current.muted = true; // Ensure video is muted to prevent feedback if audio is on
-        await videoRef.current.play();
-      } else {
-        setMessage("Video element or stream not available.");
-        return;
+      // Ensure we have a camera stream
+      if (!streamRef.current) {
+        await startCameraStream(selectedDevice);
       }
 
       // Initialize the video recorder
-      // Ensure streamRef.current is not null before passing to createVideoRecorder
       if (!streamRef.current) {
         setMessage("Failed to get media stream.");
         return;
@@ -173,8 +211,17 @@ export default function GamePage() {
           videoRecorderRef.current?.start();
           setIsCapturing(true);
 
+          // Start recording progress animation
+          let progress = 0;
+          const progressInterval = setInterval(() => {
+            progress += 100 / (RECORDING_SECONDS * 10); // Update every 100ms
+            setRecordingProgress(Math.min(progress, 100));
+          }, 100);
+
           // Automatically stop recording after RECORDING_SECONDS
           setTimeout(() => {
+            clearInterval(progressInterval);
+            setRecordingProgress(100);
             stopCapture();
           }, RECORDING_SECONDS * 1000);
         }
@@ -187,21 +234,16 @@ export default function GamePage() {
         }. Please check camera permissions.`
       );
       setIsCapturing(false);
-      if (streamRef.current) {
-        streamRef.current
-          .getTracks()
-          .forEach((track: MediaStreamTrack) => track.stop()); // Explicitly type track
-        streamRef.current = null;
-      }
     }
   };
-
   // Stop capturing
   const stopCapture = async () => {
     if (videoRecorderRef.current) {
       try {
         const videoBlob = await videoRecorderRef.current.stop();
         recordedVideoRef.current = videoBlob;
+        // Create URL for preview
+        recordedVideoURLRef.current = URL.createObjectURL(videoBlob);
         setMessage(
           "Video gravado! Clique em 'Verificar Meu Sinal' para processar."
         );
@@ -212,6 +254,7 @@ export default function GamePage() {
             .getTracks()
             .forEach((track: MediaStreamTrack) => track.stop()); // Explicitly type track
           streamRef.current = null;
+          setHasStream(false);
         }
         if (videoRef.current && videoRef.current.srcObject) {
           (videoRef.current.srcObject as MediaStream)
@@ -238,7 +281,6 @@ export default function GamePage() {
       startCapture();
     }
   };
-
   // Submit video to the API for processing
   const submitVideo = async () => {
     if (!currentSign || !recordedVideoRef.current) {
@@ -247,6 +289,7 @@ export default function GamePage() {
     }
 
     setIsSubmitting(true);
+    setIsSubmittingModal(true);
     setMessage("Processing video... This may take a moment.");
     setPredictions([]);
     setGameResult(null);
@@ -310,14 +353,19 @@ export default function GamePage() {
       );
     } finally {
       setIsSubmitting(false);
+      setIsSubmittingModal(false);
     }
   };
-
   // Start over with a new sign
   const startOver = () => {
     setPredictions([]);
     setGameResult(null);
     recordedVideoRef.current = null;
+    // Clean up video URL
+    if (recordedVideoURLRef.current) {
+      URL.revokeObjectURL(recordedVideoURLRef.current);
+      recordedVideoURLRef.current = null;
+    }
 
     if (isCapturing && videoRecorderRef.current) {
       videoRecorderRef.current
@@ -331,6 +379,7 @@ export default function GamePage() {
         .getTracks()
         .forEach((track: MediaStreamTrack) => track.stop()); // Explicitly type track
       streamRef.current = null;
+      setHasStream(false);
     }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
@@ -420,7 +469,7 @@ export default function GamePage() {
                     💡
                   </span>
                   How to Play
-                </h3>
+                </h3>{" "}
                 <ul className="space-y-2 text-gray-600">
                   <li className="flex items-start">
                     <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
@@ -434,7 +483,9 @@ export default function GamePage() {
                     <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
                       2
                     </span>
-                    <span>Press "Stop Recording" when you're done.</span>
+                    <span>
+                      The recording will automatically stop after 5 seconds.
+                    </span>
                   </li>
                   <li className="flex items-start">
                     <span className="w-6 h-6 rounded-full bg-[#009fe3]/10 text-[#009fe3] flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
@@ -455,15 +506,11 @@ export default function GamePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
+                  {" "}
                   <h2 className="text-xl text-gray-500 mb-2">Please sign:</h2>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
                     {currentSign}
                   </h1>
-                  {countdown > 0 && (
-                    <div className="mt-4 text-6xl font-bold text-[#009fe3]">
-                      {countdown}
-                    </div>
-                  )}
                   <button
                     onClick={handleSkipSign}
                     className="mt-4 text-sm text-[#009fe3] hover:underline"
@@ -524,11 +571,16 @@ export default function GamePage() {
                 >
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Camera:
-                  </label>
+                  </label>{" "}
                   <select
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#009fe3]"
                     value={selectedDevice}
-                    onChange={(e) => setSelectedDevice(e.target.value)}
+                    onChange={async (e) => {
+                      setSelectedDevice(e.target.value);
+                      if (!isCapturing && !recordedVideoRef.current) {
+                        await startCameraStream(e.target.value);
+                      }
+                    }}
                     disabled={isCapturing || isSubmitting}
                   >
                     {devices.length === 0 && (
@@ -550,98 +602,175 @@ export default function GamePage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
+                {" "}
                 <div className="absolute inset-0 rounded-2xl border-4 border-dashed border-[#009fe3]/30 bg-[#f0f9ff] flex items-center justify-center overflow-hidden">
-                  <video
-                    ref={videoRef}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    playsInline
-                    style={{
-                      // Show if capturing (live feed) or if no recorded video yet (to show placeholder)
-                      display:
-                        isCapturing ||
-                        (!recordedVideoRef.current && !isSubmitting)
-                          ? "block"
-                          : "none",
-                    }}
-                  />
+                  {!recordedVideoRef.current ? (
+                    <>
+                      {/* Video element - always show when stream is available */}
+                      <video
+                        ref={videoRef}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        playsInline
+                        style={{
+                          display: hasStream ? "block" : "none",
+                        }}
+                      />
 
-                  {isCapturing && (
-                    <div className="absolute top-4 right-4 flex items-center z-20">
-                      <div className="w-4 h-4 rounded-full bg-red-500 mr-2 animate-pulse" />
-                      <span className="text-red-500 font-medium">REC</span>
-                    </div>
+                      {/* Countdown overlay in video div */}
+                      {countdown > 0 && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-30">
+                          <div className="text-center text-white">
+                            <div className="text-8xl font-bold mb-2">
+                              {countdown}
+                            </div>
+                            <div className="text-xl">Get ready...</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Recording indicator and progress bar */}
+                      {isCapturing && (
+                        <>
+                          <div className="absolute top-4 right-4 flex items-center z-20">
+                            <div className="w-4 h-4 rounded-full bg-red-500 mr-2 animate-pulse" />
+                            <span className="text-red-500 font-medium">
+                              REC
+                            </span>
+                          </div>{" "}
+                          {/* Recording progress bar */}
+                          <div className="absolute bottom-4 left-4 right-4 z-20">
+                            <div className="bg-black/50 rounded-full p-2">
+                              <div className="h-2 bg-gray-600 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-red-500 transition-all duration-100 ease-out"
+                                  style={{ width: `${recordingProgress}%` }}
+                                />
+                              </div>
+                              <p className="text-white text-center text-sm mt-2">
+                                Recording:{" "}
+                                {Math.floor(
+                                  (recordingProgress / 100) * RECORDING_SECONDS
+                                )}
+                                s / {RECORDING_SECONDS}s
+                              </p>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Placeholder when no stream available */}
+                      {!hasStream && !isSubmitting && (
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-center z-10 p-4">
+                          {isLoadingSign && <p>Loading sign...</p>}
+                          {!isLoadingSign && currentSign && (
+                            <div>
+                              <p className="text-lg font-semibold mb-2">
+                                Ready to record:
+                              </p>
+                              <p className="text-3xl font-bold mb-4">
+                                {currentSign}
+                              </p>
+                              <p className="text-sm">Click Start Recording</p>
+                            </div>
+                          )}
+                          {!isLoadingSign &&
+                            !currentSign &&
+                            devices.length > 0 && (
+                              <p>Select a sign or wait for one to load.</p>
+                            )}
+                          {devices.length === 0 && !isLoadingSign && (
+                            <p>No camera found. Please connect a camera.</p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* Video recorded successfully - show preview */
+                    <video
+                      src={recordedVideoURLRef.current || undefined}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      muted
+                      style={{
+                        // Hide volume controls using CSS
+                        WebkitAppearance: "none",
+                      }}
+                      onLoadedMetadata={(e) => {
+                        // Ensure video stays muted
+                        e.currentTarget.muted = true;
+                        e.currentTarget.volume = 0;
+                      }}
+                    />
                   )}
 
-                  {/* Placeholder when not capturing, no video recorded, and not submitting */}
-                  {!isCapturing &&
-                    !recordedVideoRef.current &&
-                    !isSubmitting &&
-                    !streamRef.current && (
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white text-center z-10 p-4">
-                        {isLoadingSign && <p>Loading sign...</p>}
-                        {!isLoadingSign && currentSign && (
-                          <div>
-                            <p className="text-lg font-semibold mb-2">
-                              Ready to record:
-                            </p>
-                            <p className="text-3xl font-bold mb-4">
-                              {currentSign}
-                            </p>
-                            <p className="text-sm">Click Start Recording</p>
-                          </div>
-                        )}
-                        {!isLoadingSign &&
-                          !currentSign &&
-                          devices.length > 0 && (
-                            <p>Select a sign or wait for one to load.</p>
-                          )}
-                        {devices.length === 0 && !isLoadingSign && (
-                          <p>No camera found. Please connect a camera.</p>
-                        )}
-                      </div>
-                    )}
-
-                  {/* Message when video is recorded and ready for submission */}
-                  {recordedVideoRef.current &&
-                    !isCapturing &&
-                    !isSubmitting && (
-                      <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-center z-20 px-6">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-16 w-16 text-green-400 mb-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <p className="text-xl font-semibold mb-2">
-                          Recording Complete!
-                        </p>
-                        <p className="text-sm mb-4">
-                          Video captured. Click "Check My Sign" to submit.
-                        </p>
-                        {/* Add null check for recordedVideoRef.current before accessing size */}
-                        {recordedVideoRef.current && (
-                          <p className="text-xs text-gray-300">
-                            Size:{" "}
-                            {(
-                              recordedVideoRef.current.size /
-                              1024 /
-                              1024
-                            ).toFixed(2)}{" "}
-                            MB
-                          </p>
-                        )}
-                      </div>
-                    )}
-                </div>
+                  {/* Recording complete overlay */}
+                  {recordedVideoRef.current && (
+                    <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium z-20 flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      Recorded
+                    </div>
+                  )}
+                </div>{" "}
               </motion.div>
+
+              {/* Video info when recorded */}
+              {recordedVideoRef.current && (
+                <motion.div
+                  className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl w-full max-w-2xl"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-green-600 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <span className="text-green-800 font-medium">
+                        Video Preview
+                      </span>
+                    </div>
+                    <span className="text-green-600 text-sm">
+                      {recordedVideoRef.current &&
+                        `${(
+                          recordedVideoRef.current.size /
+                          1024 /
+                          1024
+                        ).toFixed(2)} MB`}
+                    </span>
+                  </div>
+                  <p className="text-green-700 text-sm mt-2">
+                    Review your sign above. If it looks good, click "Check My
+                    Sign" to analyze it.
+                  </p>
+                </motion.div>
+              )}
 
               <motion.div
                 className="flex flex-wrap gap-4 justify-center"
@@ -742,8 +871,44 @@ export default function GamePage() {
               </motion.div>
             </>
           )}
-        </div>
+        </div>{" "}
       </main>
+
+      {/* Submission Loading Modal */}
+      {isSubmittingModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <motion.div
+            className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="mb-6">
+              {/* Animated loading spinner */}
+              <div className="w-16 h-16 mx-auto mb-4 relative">
+                <div className="absolute inset-0 border-4 border-[#009fe3]/20 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-[#009fe3] rounded-full border-t-transparent animate-spin"></div>
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                Analyzing Your Sign
+              </h3>
+              <p className="text-gray-600">
+                Please wait while our AI analyzes your sign. This may take a few
+                moments...
+              </p>
+            </div>
+
+            {/* Progress indicators */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-center text-sm text-[#009fe3]">
+                <div className="w-4 h-4 mr-2 border-2 border-[#009fe3] border-t-transparent rounded-full animate-spin"></div>
+                Processing gestures...
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Decorative elements */}
       <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">

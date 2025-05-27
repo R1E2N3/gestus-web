@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { motion, useAnimation, useInView } from "framer-motion"
-import Image from "next/image"
-import PlayfulNav from "../components/PlayfulNav"
-import HandSymbol from "../components/HandSymbol"
-import { useTranslation } from "../hooks/useTranslation"
+import { useEffect, useRef } from "react";
+import { motion, useAnimation, useInView } from "framer-motion";
+import Image from "next/image";
+import PlayfulNav from "../components/PlayfulNav";
+import Logo from "../components/Logo";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function About() {
-  const t = useTranslation()
-  
+  const t = useTranslation();
+
   return (
     <>
       <PlayfulNav />
@@ -17,25 +17,24 @@ export default function About() {
       <TeamSection />
       <MissionVisionSection />
       <TimelineSection />
-      <StatisticsSection />
       <ValuesSection />
       <CallToAction />
     </>
-  )
+  );
 }
 
 // Hero Section
 function HeroSection() {
-  const controls = useAnimation()
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, amount: 0.2 })
-  const t = useTranslation()
+  const controls = useAnimation();
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.2 });
+  const t = useTranslation();
 
   useEffect(() => {
     if (inView) {
-      controls.start("visible")
+      controls.start("visible");
     }
-  }, [controls, inView])
+  }, [controls, inView]);
 
   return (
     <section className="relative pt-24 pb-16 overflow-hidden bg-gradient-to-b from-[#f0f9ff] to-white">
@@ -70,7 +69,6 @@ function HeroSection() {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             {t.about.title}{" "}
             <span className="relative inline-block">
-              <span className="relative z-10">Gestus</span>
               <span className="absolute bottom-2 left-0 w-full h-4 bg-[#ffd23f]/30 -z-10 transform -rotate-1"></span>
             </span>
           </h1>
@@ -100,10 +98,10 @@ function HeroSection() {
                 </div>
               </div>
               <div>
-                <h2 className="text-2xl font-bold mb-4">{t.about.story.title}</h2>
-                <p className="text-gray-600 mb-4">
-                  {t.about.story.content}
-                </p>
+                <h2 className="text-2xl font-bold mb-4">
+                  {t.about.story.title}
+                </h2>
+                <p className="text-gray-600 mb-4">{t.about.story.content}</p>
               </div>
             </div>
           </div>
@@ -114,22 +112,48 @@ function HeroSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
 // Mission and Vision Section
 function MissionVisionSection() {
-  const t = useTranslation()
-  
+  const t = useTranslation();
+
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <svg className="absolute top-1/4 left-10" width="120" height="120" viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="50" stroke="#ffd23f" strokeWidth="2" strokeDasharray="8 6" fill="none" />
+        <svg
+          className="absolute top-1/4 left-10"
+          width="120"
+          height="120"
+          viewBox="0 0 120 120"
+        >
+          <circle
+            cx="60"
+            cy="60"
+            r="50"
+            stroke="#ffd23f"
+            strokeWidth="2"
+            strokeDasharray="8 6"
+            fill="none"
+          />
         </svg>
-        <svg className="absolute bottom-1/4 right-10" width="80" height="80" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r="30" stroke="#009fe3" strokeWidth="2" strokeDasharray="6 4" fill="none" />
+        <svg
+          className="absolute bottom-1/4 right-10"
+          width="80"
+          height="80"
+          viewBox="0 0 80 80"
+        >
+          <circle
+            cx="40"
+            cy="40"
+            r="30"
+            stroke="#009fe3"
+            strokeWidth="2"
+            strokeDasharray="6 4"
+            fill="none"
+          />
         </svg>
       </div>
 
@@ -151,7 +175,7 @@ function MissionVisionSection() {
 
               <div className="p-6 relative">
                 <div className="absolute top-0 right-0 opacity-10">
-                  <HandSymbol size={120} animated={false} />
+                  <Logo size={120} animated={false} />
                 </div>
 
                 <p className="text-gray-600 mb-4 relative z-10">
@@ -195,7 +219,7 @@ function MissionVisionSection() {
 
               <div className="p-6 relative">
                 <div className="absolute top-0 right-0 opacity-10">
-                  <HandSymbol size={120} animated={false} color="#009fe3" />
+                  <Logo size={120} animated={false} color="#009fe3" />
                 </div>
 
                 <p className="text-gray-600 mb-4 relative z-10">
@@ -225,22 +249,22 @@ function MissionVisionSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 // Team Section
 function TeamSection() {
-  const t = useTranslation()
-  const controls = useAnimation()
-  const ref = useRef(null)
-  const inView = useInView(ref, { once: true, amount: 0.2 })
-  
+  const t = useTranslation();
+  const controls = useAnimation();
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.2 });
+
   useEffect(() => {
     if (inView) {
-      controls.start("visible")
+      controls.start("visible");
     }
-  }, [controls, inView])
-  
+  }, [controls, inView]);
+
   return (
     <section className="py-20 bg-gradient-to-b from-white to-[#f0f9ff] relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -254,16 +278,18 @@ function TeamSection() {
               opacity: 1,
               y: 0,
               transition: {
-                duration: 0.6
-              }
-            }
+                duration: 0.6,
+              },
+            },
           }}
           className="text-center mb-16"
         >
           <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
             OUR TEAM
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.about.team.title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            {t.about.team.title}
+          </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {t.about.team.subtitle}
           </p>
@@ -280,9 +306,9 @@ function TeamSection() {
                   y: 0,
                   transition: {
                     duration: 0.6,
-                    delay: index * 0.15
-                  }
-                }
+                    delay: index * 0.15,
+                  },
+                },
               }}
               whileHover={{ y: -10 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden"
@@ -290,17 +316,25 @@ function TeamSection() {
               <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                 <div
                   className="w-24 h-24 rounded-full flex items-center justify-center text-3xl"
-                  style={{ backgroundColor: index % 2 === 0 ? "#ffd23f" : "#009fe3" }}
+                  style={{
+                    backgroundColor: index % 2 === 0 ? "#ffd23f" : "#009fe3",
+                  }}
                 >
                   {member.name.charAt(0)}
                 </div>
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                <p className="text-sm text-[#009fe3] font-medium mb-3">{member.role}</p>
+                <p className="text-sm text-[#009fe3] font-medium mb-3">
+                  {member.role}
+                </p>
                 <p className="text-gray-600 mb-4">{member.bio}</p>
                 <a
-                  href={index === 0 ? "https://www.linkedin.com/in/joão-p-m-santos/" : "https://www.linkedin.com/in/renzo-honorato/"}
+                  href={
+                    index === 0
+                      ? "https://www.linkedin.com/in/joão-p-m-santos/"
+                      : "https://www.linkedin.com/in/renzo-honorato/"
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center text-[#009fe3] hover:underline"
@@ -361,13 +395,13 @@ function TeamSection() {
         </motion.div> */}
       </div>
     </section>
-  )
+  );
 }
 
 // Timeline Section
 function TimelineSection() {
-  const t = useTranslation()
-  
+  const t = useTranslation();
+
   return (
     <section className="py-20 bg-[#f0f9ff] relative overflow-hidden">
       <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-[#ffd23f]/5 rounded-bl-full" />
@@ -384,7 +418,9 @@ function TimelineSection() {
           <span className="inline-block px-4 py-1 bg-[#ffd23f]/20 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
             OUR JOURNEY
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.about.journey.title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            {t.about.journey.title}
+          </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {t.about.journey.subtitle}
           </p>
@@ -413,7 +449,10 @@ function TimelineSection() {
                   <div className="z-10 flex-shrink-0">
                     <div
                       className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: index % 2 === 0 ? "#ffd23f" : "#009fe3" }}
+                      style={{
+                        backgroundColor:
+                          index % 2 === 0 ? "#ffd23f" : "#009fe3",
+                      }}
                     >
                       {event.year.slice(2)}
                     </div>
@@ -428,10 +467,14 @@ function TimelineSection() {
                 >
                   <div className="hidden md:block md:w-5/12">
                     <div
-                      className={`p-6 rounded-xl shadow-lg bg-white ${index % 2 === 0 ? "mr-8 text-right" : "ml-8"}`}
+                      className={`p-6 rounded-xl shadow-lg bg-white ${
+                        index % 2 === 0 ? "mr-8 text-right" : "ml-8"
+                      }`}
                     >
                       <div className="text-xl font-bold mb-2">{event.year}</div>
-                      <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+                      <h3 className="text-lg font-semibold mb-2">
+                        {event.title}
+                      </h3>
                       <p className="text-gray-600">{event.description}</p>
                     </div>
                   </div>
@@ -443,7 +486,9 @@ function TimelineSection() {
                   <div className="md:hidden md:w-5/12 ml-6">
                     <div className="p-6 rounded-xl shadow-lg bg-white">
                       <div className="text-xl font-bold mb-2">{event.year}</div>
-                      <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
+                      <h3 className="text-lg font-semibold mb-2">
+                        {event.title}
+                      </h3>
                       <p className="text-gray-600">{event.description}</p>
                     </div>
                   </div>
@@ -454,13 +499,13 @@ function TimelineSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 // Statistics Section
 function StatisticsSection() {
-  const t = useTranslation()
-  
+  const t = useTranslation();
+
   return (
     <section className="py-20 bg-white relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -474,7 +519,9 @@ function StatisticsSection() {
           <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
             BY THE NUMBERS
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.about.impact.title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            {t.about.impact.title}
+          </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {t.about.impact.subtitle}
           </p>
@@ -488,7 +535,9 @@ function StatisticsSection() {
             transition={{ duration: 0.6 }}
           >
             <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold mb-6">Deaf Population in Brazil</h3>
+              <h3 className="text-2xl font-bold mb-6">
+                Deaf Population in Brazil
+              </h3>
 
               <div className="relative h-64">
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -497,7 +546,10 @@ function StatisticsSection() {
                     <div className="absolute inset-0 rounded-full border-8 border-gray-200"></div>
 
                     {/* Progress circle */}
-                    <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                    <svg
+                      className="absolute inset-0 w-full h-full"
+                      viewBox="0 0 100 100"
+                    >
                       <circle
                         cx="50"
                         cy="50"
@@ -514,7 +566,9 @@ function StatisticsSection() {
                     {/* Percentage text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-4xl font-bold">1%</span>
-                      <span className="text-sm text-gray-500">of population</span>
+                      <span className="text-sm text-gray-500">
+                        of population
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -550,7 +604,7 @@ function StatisticsSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 // Counter Card Component
@@ -583,13 +637,13 @@ function CounterCard({ icon, value, label, color, delay }: CounterCardProps) {
       </div>
       <div className="text-sm text-gray-600">{label}</div>
     </motion.div>
-  )
+  );
 }
 
 // Values Section
 function ValuesSection() {
-  const t = useTranslation()
-  
+  const t = useTranslation();
+
   return (
     <section className="py-20 bg-gradient-to-b from-white to-[#f0f9ff] relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -603,11 +657,15 @@ function ValuesSection() {
           <span className="inline-block px-4 py-1 bg-[#ffd23f]/20 text-[#ffd23f] rounded-full text-sm font-medium mb-4">
             OUR VALUES
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.about.values.title}</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.about.values.subtitle}</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            {t.about.values.title}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {t.about.values.subtitle}
+          </p>
         </motion.div>
 
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap w-9/12 items-center mx-auto justify-center gap-4">
           {t.about.values.list.map((value: string, index: number) => (
             <motion.div
               key={index}
@@ -639,21 +697,19 @@ function ValuesSection() {
                 {["🤝", "💡", "🌱"][index]}
               </div>
               <h3 className="text-xl font-bold mb-3">{card.title}</h3>
-              <p className="text-gray-600">
-                {card.content}
-              </p>
+              <p className="text-gray-600">{card.content}</p>
             </motion.div>
           ))}
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 // Call to Action Section
 function CallToAction() {
-  const t = useTranslation()
-  
+  const t = useTranslation();
+
   return (
     <section className="py-20 bg-gradient-to-b from-[#f0f9ff] to-white relative overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -675,12 +731,18 @@ function CallToAction() {
           <span className="inline-block px-4 py-1 bg-[#009fe3]/20 text-[#009fe3] rounded-full text-sm font-medium mb-4">
             JOIN US
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">{t.about.cta.title}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            {t.about.cta.title}
+          </h2>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
             {t.about.cta.content}
           </p>
 
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-block"
+          >
             <a
               href="/prototype"
               className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-[#009fe3] to-[#ffd23f] text-white rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
@@ -693,16 +755,21 @@ function CallToAction() {
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                ></path>
               </svg>
             </a>
           </motion.div>
 
           <div className="mt-12 flex justify-center">
-            <HandSymbol size={120} animated={true} />
+            <Logo size={120} animated={true} />
           </div>
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

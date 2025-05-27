@@ -113,3 +113,14 @@ body {
 .animate-bounce {
   animation: bounce 1s infinite;
 }
+
+/* Hide video volume controls since sign language videos don't need audio */
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button {
+  display: none !important;
+}
+
+video::-moz-media-controls-volume-slider,
+video::-moz-media-controls-mute-button {
+  display: none !important;
+}

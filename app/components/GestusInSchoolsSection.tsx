@@ -1,18 +1,21 @@
-"use client"
+"use client";
 
-import { useRef } from "react"
-import { motion, useInView } from "framer-motion"
-import Image from "next/image"
-import HandSymbol from "./HandSymbol"
-import { useTranslation } from "../hooks/useTranslation"
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import Image from "next/image";
+import Logo from "./Logo";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function GestusInSchoolsSection() {
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(sectionRef, { once: true, threshold: 0.1 })
-  const t = useTranslation()
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
+  const t = useTranslation();
 
   return (
-    <section ref={sectionRef} className="py-24 px-4 bg-white relative overflow-hidden">
+    <section
+      ref={sectionRef}
+      className="py-24 px-4 bg-white relative overflow-hidden"
+    >
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 w-64 h-64 rounded-full bg-[#ffd23f]/5 transform -translate-x-1/2 -translate-y-1/2" />
@@ -56,7 +59,9 @@ export default function GestusInSchoolsSection() {
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">{t.schools.joaoCard.title}</h3>
+                <h3 className="text-xl font-bold mb-2">
+                  {t.schools.joaoCard.title}
+                </h3>
                 <p className="text-gray-600">
                   {t.schools.joaoCard.description}
                 </p>
@@ -82,7 +87,9 @@ export default function GestusInSchoolsSection() {
                 />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold mb-2">{t.schools.renzoCard.title}</h3>
+                <h3 className="text-xl font-bold mb-2">
+                  {t.schools.renzoCard.title}
+                </h3>
                 <p className="text-gray-600">
                   {t.schools.renzoCard.description}
                 </p>
@@ -102,25 +109,25 @@ export default function GestusInSchoolsSection() {
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             <div className="text-center">
-              <div className="text-4xl font-bold text-[#ffd23f] mb-2">{t.schools.mission}</div>
-              <p className="text-gray-700">
-                {t.schools.missionText}
-              </p>
+              <div className="text-4xl font-bold text-[#ffd23f] mb-2">
+                {t.schools.mission}
+              </div>
+              <p className="text-gray-700">{t.schools.missionText}</p>
             </div>
 
             <div className="flex justify-center">
-              <HandSymbol size={120} animated={true} />
+              <Logo size={120} animated={true} />
             </div>
 
             <div className="text-center">
-              <div className="text-4xl font-bold text-[#009fe3] mb-2">{t.schools.join}</div>
-              <p className="text-gray-700">
-                {t.schools.joinText}
-              </p>
+              <div className="text-4xl font-bold text-[#009fe3] mb-2">
+                {t.schools.join}
+              </div>
+              <p className="text-gray-700">{t.schools.joinText}</p>
             </div>
           </div>
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

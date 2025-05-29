@@ -31,36 +31,55 @@ export default function ContributePage() {
   const [recordingProgress, setRecordingProgress] = useState<number>(0);
   const [isSubmittingModal, setIsSubmittingModal] = useState(false);
   const [hasStream, setHasStream] = useState(false);
-
   // States for sample video functionality
   const [showSampleVideo, setShowSampleVideo] = useState(false);
   const [sampleVideoUrl, setSampleVideoUrl] = useState<string>("");
   const [isLoadingSampleVideo, setIsLoadingSampleVideo] = useState(false);
   const [sampleVideoError, setSampleVideoError] = useState<string>("");
 
+  // States for sign selection context
+  const [signContext, setSignContext] = useState<{
+    currentCount: number;
+    allCounts: Record<string, number>;
+  } | null>(null);
+
   // References
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const videoRecorderRef = useRef<CustomVideoRecorder | null>(null);
   const recordedVideoRef = useRef<Blob | null>(null);
-  const recordedVideoURLRef = useRef<string | null>(null);
-  // Fetch a random sign from the API
+  const recordedVideoURLRef = useRef<string | null>(null); // Fetch a random sign from the API
   const fetchRandomSign = async () => {
     try {
       setIsLoadingSign(true);
-      setMessage("Loading a new sign...");
+      setMessage("Finding the sign that needs more samples...");
       const response = await fetch("/api/random-sign");
       if (!response.ok) {
         throw new Error("Failed to fetch random sign");
       }
       const data = await response.json();
       setCurrentSign(data.sign);
-      setMessage(
-        `Please perform the sign for "${data.sign}". Press Start Recording when ready.`
-      );
+
+      // Store sign context if available
+      if (data.current_count !== undefined) {
+        setSignContext({
+          currentCount: data.current_count,
+          allCounts: data.all_counts || {},
+        });
+        setMessage(
+          `Great! "${data.sign}" needs more samples (currently has ${data.current_count}). Press Start Recording when ready.`
+        );
+      } else {
+        // Fallback message for when backend context isn't available
+        setSignContext(null);
+        setMessage(
+          `Please perform the sign for "${data.sign}". Press Start Recording when ready.`
+        );
+      }
     } catch (error) {
       console.error("Error fetching random sign:", error);
-      setMessage("Failed to fetch a random sign. Please try again.");
+      setMessage("Failed to fetch a sign. Please try again.");
+      setSignContext(null);
     } finally {
       setIsLoadingSign(false);
     }
@@ -335,11 +354,11 @@ export default function ContributePage() {
       setIsSubmitting(false);
       setIsSubmittingModal(false);
     }
-  };
-  // Start over with a new sign
+  }; // Start over with a new sign
   const startOver = () => {
     setShowThankYou(false);
     recordedVideoRef.current = null;
+    setSignContext(null); // Reset sign context
     // Clean up video URL
     if (recordedVideoURLRef.current) {
       URL.revokeObjectURL(recordedVideoURLRef.current);
@@ -503,27 +522,142 @@ export default function ContributePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  <h2 className="text-xl text-gray-500 mb-2">Please sign:</h2>                  <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
+                  {" "}
+                  <h2 className="text-xl text-gray-500 mb-2">
+                    Please sign:
+                  </h2>{" "}
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-[#009fe3] to-[#ffd23f] bg-clip-text text-transparent">
                     {currentSign}
-                  </h1>
+                  </h1>{" "}
+                  {/* Sign context information */}
+                  {signContext && (
+                    <div className="mt-3 space-y-3">
+                      <div className="px-4 py-2 bg-gradient-to-r from-[#ffd23f]/20 to-[#009fe3]/20 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          This sign currently has{" "}
+                          <strong>{signContext.currentCount}</strong> samples -
+                          your contribution will help improve our model! 🎯
+                        </p>
+                      </div>
+
+                      {/* Dataset balance visualization */}
+                      <div className="px-4 py-3 bg-white/50 rounded-lg border">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                          <svg
+                            className="w-4 h-4 mr-1 text-[#009fe3]"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Dataset Balance Progress
+                        </h4>
+                        <div className="grid grid-cols-4 gap-1">
+                          {Object.entries(signContext.allCounts)
+                            .sort((a, b) => a[1] - b[1])
+                            .slice(0, 8)
+                            .map(([sign, count], index) => {
+                              const isCurrentSign = sign === currentSign;
+                              const maxCount = Math.max(
+                                ...Object.values(signContext.allCounts)
+                              );
+                              const fillPercentage =
+                                maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+                              return (
+                                <div key={sign} className="text-center">
+                                  <div
+                                    className={`text-xs mb-1 font-medium ${
+                                      isCurrentSign
+                                        ? "text-[#009fe3]"
+                                        : "text-gray-600"
+                                    }`}
+                                  >
+                                    {sign}
+                                  </div>
+                                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full transition-all duration-300 ${
+                                        isCurrentSign
+                                          ? "bg-[#009fe3]"
+                                          : "bg-[#ffd23f]"
+                                      }`}
+                                      style={{
+                                        width: `${Math.max(
+                                          fillPercentage,
+                                          5
+                                        )}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <div
+                                    className={`text-xs mt-1 ${
+                                      isCurrentSign
+                                        ? "text-[#009fe3] font-bold"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
+                                    {count}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                          Showing 8 signs with lowest sample counts
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
                     <button
                       onClick={fetchSampleVideo}
                       className="px-4 py-2 text-sm bg-[#009fe3] text-white rounded-lg hover:bg-[#0084bd] flex items-center disabled:opacity-50"
-                      disabled={isLoadingSign || isCapturing || isSubmitting || isLoadingSampleVideo}
+                      disabled={
+                        isLoadingSign ||
+                        isCapturing ||
+                        isSubmitting ||
+                        isLoadingSampleVideo
+                      }
                     >
                       {isLoadingSampleVideo ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Loading...
                         </>
                       ) : (
                         <>
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-9 4h10a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                          <svg
+                            className="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-9 4h10a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"
+                            ></path>
                           </svg>
                           View Sample
                         </>
@@ -538,7 +672,9 @@ export default function ContributePage() {
                     </button>
                   </div>
                   {sampleVideoError && (
-                    <p className="mt-2 text-sm text-orange-600">{sampleVideoError}</p>
+                    <p className="mt-2 text-sm text-orange-600">
+                      {sampleVideoError}
+                    </p>
                   )}
                 </motion.div>
               )}
@@ -940,14 +1076,25 @@ export default function ContributePage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b">
               <h2 className="text-2xl font-bold text-gray-800">
-                Sample Video: <span className="text-[#009fe3]">{currentSign}</span>
+                Sample Video:{" "}
+                <span className="text-[#009fe3]">{currentSign}</span>
               </h2>
               <button
                 onClick={closeSampleVideo}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
                 </svg>
               </button>
             </div>
@@ -971,8 +1118,9 @@ export default function ContributePage() {
                   </div>
                   <div className="text-center">
                     <p className="text-gray-600 mb-4">
-                      This is how to perform the sign for "<strong>{currentSign}</strong>". 
-                      Watch carefully and try to replicate the movement when recording your own version.
+                      This is how to perform the sign for "
+                      <strong>{currentSign}</strong>". Watch carefully and try
+                      to replicate the movement when recording your own version.
                     </p>
                     <button
                       onClick={closeSampleVideo}
@@ -985,8 +1133,18 @@ export default function ContributePage() {
               ) : (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      ></path>
                     </svg>
                   </div>
                   <p className="text-gray-600">Loading sample video...</p>

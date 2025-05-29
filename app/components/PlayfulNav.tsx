@@ -7,7 +7,13 @@ import Logo from "./Logo";
 import LanguageToggle from "./LanguageToggle";
 import { useTranslation } from "../hooks/useTranslation";
 
-type NavLinkKey = "home" | "solution" | "about" | "game" | "contribute";
+type NavLinkKey =
+  | "home"
+  | "solution"
+  | "about"
+  | "game"
+  | "contribute"
+  | "status";
 
 interface NavLink {
   href: string;
@@ -21,6 +27,7 @@ const navLinks: NavLink[] = [
   { href: "/about", key: "about", emoji: "👋" },
   { href: "/game", key: "game", emoji: "🎮" },
   { href: "/contribute", key: "contribute", emoji: "✨" },
+  { href: "/status", key: "status", emoji: "📊" },
 ];
 
 export default function PlayfulNav() {

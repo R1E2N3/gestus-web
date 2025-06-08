@@ -9,6 +9,7 @@ export const translations = {
         prototype: "Prototype",
         game: "Play Game",
         contribute: "Contribute",
+        dataset: "Dataset",
       },
     },
     hero: {
@@ -356,6 +357,7 @@ export const translations = {
         prototype: "Protótipo",
         game: "Jogar",
         contribute: "Contribuir",
+        dataset: "Base de Dados",
       },
     },
     hero: {

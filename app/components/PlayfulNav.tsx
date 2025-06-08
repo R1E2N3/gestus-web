@@ -13,7 +13,8 @@ type NavLinkKey =
   | "about"
   | "game"
   | "contribute"
-  | "status";
+  | "dataset"
+  | "prototype";
 
 interface NavLink {
   href: string;
@@ -23,11 +24,10 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
   { href: "/", key: "home", emoji: "🏠" },
-  { href: "/our-solution", key: "solution", emoji: "💡" },
   { href: "/about", key: "about", emoji: "👋" },
   { href: "/game", key: "game", emoji: "🎮" },
   { href: "/contribute", key: "contribute", emoji: "✨" },
-  { href: "/status", key: "status", emoji: "📊" },
+  { href: "/dataset", key: "dataset", emoji: "📊" },
 ];
 
 export default function PlayfulNav() {
@@ -73,7 +73,6 @@ export default function PlayfulNav() {
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 />
                 <span className="relative flex items-center">
-                  <span className="mr-1">{link.emoji}</span>
                   <span
                     className={`${
                       activeLink === link.href

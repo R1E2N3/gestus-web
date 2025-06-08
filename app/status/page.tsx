@@ -3,43 +3,95 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import PlayfulNav from "../components/PlayfulNav";
-import { extractPoseLandmarks, extractHandLandmarks } from "../utils/landmarkExtractor";
+import {
+  extractPoseLandmarks,
+  extractHandLandmarks,
+} from "../utils/landmarkExtractor";
 
 // Define pose connections based on MediaPipe pose landmark indices
 const POSE_CONNECTIONS = [
   // Face
-  [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8],
-  [9, 10], [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], 
-  [17, 19], [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
-  [11, 23], [12, 24], [23, 24], [23, 25], [24, 26], [25, 27], [26, 28],
-  [27, 29], [27, 31], [29, 31], [28, 30], [28, 32], [30, 32]
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [3, 7],
+  [0, 4],
+  [4, 5],
+  [5, 6],
+  [6, 8],
+  [9, 10],
+  [11, 12],
+  [11, 13],
+  [13, 15],
+  [15, 17],
+  [15, 19],
+  [15, 21],
+  [17, 19],
+  [12, 14],
+  [14, 16],
+  [16, 18],
+  [16, 20],
+  [16, 22],
+  [18, 20],
+  [11, 23],
+  [12, 24],
+  [23, 24],
+  [23, 25],
+  [24, 26],
+  [25, 27],
+  [26, 28],
+  [27, 29],
+  [27, 31],
+  [29, 31],
+  [28, 30],
+  [28, 32],
+  [30, 32],
 ];
 
 // Define hand connections based on MediaPipe hand landmark indices
 const HAND_CONNECTIONS = [
   // Thumb
-  [0, 1], [1, 2], [2, 3], [3, 4],
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [3, 4],
   // Index finger
-  [0, 5], [5, 6], [6, 7], [7, 8],
+  [0, 5],
+  [5, 6],
+  [6, 7],
+  [7, 8],
   // Middle finger
-  [0, 9], [9, 10], [10, 11], [11, 12],
+  [0, 9],
+  [9, 10],
+  [10, 11],
+  [11, 12],
   // Ring finger
-  [0, 13], [13, 14], [14, 15], [15, 16],
+  [0, 13],
+  [13, 14],
+  [14, 15],
+  [15, 16],
   // Pinky
-  [0, 17], [17, 18], [18, 19], [19, 20],
+  [0, 17],
+  [17, 18],
+  [18, 19],
+  [19, 20],
   // Palm
-  [0, 5], [5, 9], [9, 13], [13, 17]
+  [0, 5],
+  [5, 9],
+  [9, 13],
+  [13, 17],
 ];
 
 interface SampleData {
   id: string;
   sign: string;
   timestamp: string;
-  landmarks: any[];
+  landmarks?: any[]; // Now optional, loaded on-demand
   metadata?: {
     fps?: number;
-    frame_count?: number;
     duration?: number;
+    width?: number;
+    height?: number;
   };
 }
 
@@ -53,12 +105,16 @@ export default function StatusPage() {
   const [stats, setStats] = useState<DatasetStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [selectedSign, setSelectedSign] = useState<string>("all");  const [selectedSample, setSelectedSample] = useState<SampleData | null>(null);
+  const [selectedSign, setSelectedSign] = useState<string>("all");
+  const [selectedSample, setSelectedSample] = useState<SampleData | null>(null);
+  const [loadingLandmarks, setLoadingLandmarks] = useState(false);
+  const [landmarksError, setLandmarksError] = useState<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<NodeJS.Timeout | null>(null);
   const isPlayingRef = useRef(false);
+
   // Fetch dataset statistics and samples
   useEffect(() => {
     fetchDatasetData();
@@ -72,6 +128,7 @@ export default function StatusPage() {
       }
     };
   }, []);
+
   // Cleanup animation when isPlaying changes
   useEffect(() => {
     if (!isPlaying && animationRef.current) {
@@ -99,6 +156,29 @@ export default function StatusPage() {
       setLoading(false);
     }
   };
+
+  const fetchSampleLandmarks = async (sampleId: string) => {
+    try {
+      setLoadingLandmarks(true);
+      setLandmarksError("");
+
+      const response = await fetch(`/api/sample-landmarks/${sampleId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch landmarks: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.landmarks;
+    } catch (err) {
+      console.error("Error fetching sample landmarks:", err);
+      setLandmarksError(
+        err instanceof Error ? err.message : "Failed to fetch landmarks"
+      );
+      return null;
+    } finally {
+      setLoadingLandmarks(false);
+    }
+  };
   // Filter samples based on selected sign
   const filteredSamples =
     stats?.samples.filter(
@@ -110,23 +190,23 @@ export default function StatusPage() {
     return flatLandmarks.map((frameLandmarks) => {
       // Extract pose landmarks
       const poseLandmarks = extractPoseLandmarks(frameLandmarks);
-      
+
       // Extract hand landmarks (returns [leftHand, rightHand])
       const handLandmarks = extractHandLandmarks(frameLandmarks);
-      
+
       return {
-        pose: poseLandmarks.map(point => ({
+        pose: poseLandmarks.map((point) => ({
           x: point.x,
           y: point.y,
           z: point.z,
-          visibility: 0.9 // Default visibility for pose landmarks
+          visibility: 0.9, // Default visibility for pose landmarks
         })),
         left_hand: handLandmarks[0] || [],
         right_hand: handLandmarks[1] || [],
-        face: [] // Face landmarks not currently extracted from the flat format
+        face: [], // Face landmarks not currently extracted from the flat format
       };
     });
-  };  // Draw landmarks on canvas
+  }; // Draw landmarks on canvas
   const drawLandmarks = (landmarks: any[], frameIndex: number) => {
     const canvas = canvasRef.current;
     if (!canvas || !landmarks[frameIndex]) return;
@@ -138,32 +218,39 @@ export default function StatusPage() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Check if landmarks need conversion from flat format
-    const frame = Array.isArray(landmarks[frameIndex]) && typeof landmarks[frameIndex][0] === 'number'
-      ? convertLandmarksToStructured([landmarks[frameIndex]])[0]
-      : landmarks[frameIndex];
-    
+    const frame =
+      Array.isArray(landmarks[frameIndex]) &&
+      typeof landmarks[frameIndex][0] === "number"
+        ? convertLandmarksToStructured([landmarks[frameIndex]])[0]
+        : landmarks[frameIndex];
+
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
     // Helper function to draw connections between landmarks
-    const drawConnections = (points: any[], connections: number[][], color: string) => {
+    const drawConnections = (
+      points: any[],
+      connections: number[][],
+      color: string
+    ) => {
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
-      
+
       for (const [start, end] of connections) {
         if (!points[start] || !points[end]) continue;
-        
+
         const startPoint = points[start];
         const endPoint = points[end];
-        
+
         // Skip connections with low visibility points for pose
         if (
-          (startPoint.visibility !== undefined && startPoint.visibility < 0.5) ||
+          (startPoint.visibility !== undefined &&
+            startPoint.visibility < 0.5) ||
           (endPoint.visibility !== undefined && endPoint.visibility < 0.5)
         ) {
           continue;
         }
-        
+
         ctx.beginPath();
         ctx.moveTo(startPoint.x * canvasWidth, startPoint.y * canvasHeight);
         ctx.lineTo(endPoint.x * canvasWidth, endPoint.y * canvasHeight);
@@ -175,7 +262,7 @@ export default function StatusPage() {
     if (frame.pose && frame.pose.length > 0) {
       // Draw connections first so points appear on top
       drawConnections(frame.pose, POSE_CONNECTIONS, "rgba(59, 130, 246, 0.7)"); // Semi-transparent blue
-      
+
       // Draw points
       ctx.fillStyle = "#3B82F6";
       frame.pose.forEach((point: any) => {
@@ -196,8 +283,12 @@ export default function StatusPage() {
     // Draw left hand landmarks and connections (green)
     if (frame.left_hand && frame.left_hand.length > 0) {
       // Draw connections
-      drawConnections(frame.left_hand, HAND_CONNECTIONS, "rgba(16, 185, 129, 0.7)"); // Semi-transparent green
-      
+      drawConnections(
+        frame.left_hand,
+        HAND_CONNECTIONS,
+        "rgba(16, 185, 129, 0.7)"
+      ); // Semi-transparent green
+
       // Draw points
       ctx.fillStyle = "#10B981";
       frame.left_hand.forEach((point: any) => {
@@ -216,8 +307,12 @@ export default function StatusPage() {
     // Draw right hand landmarks and connections (red)
     if (frame.right_hand && frame.right_hand.length > 0) {
       // Draw connections
-      drawConnections(frame.right_hand, HAND_CONNECTIONS, "rgba(239, 68, 68, 0.7)"); // Semi-transparent red
-      
+      drawConnections(
+        frame.right_hand,
+        HAND_CONNECTIONS,
+        "rgba(239, 68, 68, 0.7)"
+      ); // Semi-transparent red
+
       // Draw points
       ctx.fillStyle = "#EF4444";
       frame.right_hand.forEach((point: any) => {
@@ -248,9 +343,9 @@ export default function StatusPage() {
         ctx.fill();
       });
     }
-  };  // Play landmark animation
+  }; // Play landmark animation
   const playAnimation = () => {
-    if (!selectedSample || !selectedSample.landmarks.length) return;
+    if (!selectedSample || !selectedSample.landmarks?.length) return;
 
     setIsPlaying(true);
     isPlayingRef.current = true;
@@ -261,8 +356,10 @@ export default function StatusPage() {
 
     const animate = () => {
       if (!isPlayingRef.current) return; // Check if animation should continue
-      
-      drawLandmarks(selectedSample.landmarks, frameIndex);
+
+      if (selectedSample.landmarks) {
+        drawLandmarks(selectedSample.landmarks, frameIndex);
+      }
       setCurrentFrame(frameIndex);
 
       frameIndex++;
@@ -285,28 +382,66 @@ export default function StatusPage() {
     if (animationRef.current) {
       clearTimeout(animationRef.current);
     }
-  };
-  // Handle sample selection
-  const handleSampleSelect = (sample: SampleData) => {
+  }; // Handle sample selection
+  const handleSampleSelect = async (sample: SampleData) => {
     stopAnimation();
-    
-    // Convert flat landmarks to structured format if needed
-    const structuredLandmarks = sample.landmarks.every(frame => Array.isArray(frame) && typeof frame[0] === 'number')
-      ? convertLandmarksToStructured(sample.landmarks)
-      : sample.landmarks;
-    
-    const processedSample = {
-      ...sample,
-      landmarks: structuredLandmarks
-    };
-    
-    setSelectedSample(processedSample);
-    setCurrentFrame(0);
+    setLandmarksError("");
 
-    // Draw first frame
-    setTimeout(() => {
-      drawLandmarks(processedSample.landmarks, 0);
-    }, 100);
+    // If landmarks are already loaded, use them directly
+    if (sample.landmarks && sample.landmarks.length > 0) {
+      // Convert flat landmarks to structured format if needed
+      const structuredLandmarks = sample.landmarks.every(
+        (frame) => Array.isArray(frame) && typeof frame[0] === "number"
+      )
+        ? convertLandmarksToStructured(sample.landmarks)
+        : sample.landmarks;
+
+      const processedSample = {
+        ...sample,
+        landmarks: structuredLandmarks,
+      };
+
+      setSelectedSample(processedSample);
+      setCurrentFrame(0);
+
+      // Draw first frame
+      setTimeout(() => {
+        drawLandmarks(processedSample.landmarks, 0);
+      }, 100);
+      return;
+    }
+
+    // Fetch landmarks on-demand
+    try {
+      const landmarks = await fetchSampleLandmarks(sample.id);
+
+      if (!landmarks) {
+        return; // Error already handled in fetchSampleLandmarks
+      }
+
+      // Convert flat landmarks to structured format if needed
+      const structuredLandmarks = landmarks.every(
+        (frame: any) => Array.isArray(frame) && typeof frame[0] === "number"
+      )
+        ? convertLandmarksToStructured(landmarks)
+        : landmarks;
+
+      const processedSample = {
+        ...sample,
+        landmarks: structuredLandmarks,
+      };
+
+      setSelectedSample(processedSample);
+      setCurrentFrame(0);
+
+      // Draw first frame
+      setTimeout(() => {
+        drawLandmarks(processedSample.landmarks, 0);
+      }, 100);
+    } catch (error) {
+      console.error("Error loading sample landmarks:", error);
+      setLandmarksError("Failed to load landmarks for this sample");
+    }
   };
 
   // Get unique signs for filter
@@ -483,9 +618,9 @@ export default function StatusPage() {
                       <div className="text-sm text-gray-500">
                         {new Date(sample.timestamp).toLocaleString()}
                       </div>
-                    </div>
+                    </div>{" "}
                     <div className="text-sm text-gray-500">
-                      {sample.landmarks.length} frames
+                      Click to load landmarks
                     </div>
                   </div>
                 </div>
@@ -506,94 +641,154 @@ export default function StatusPage() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="bg-white rounded-xl shadow-lg p-6"
           >
-            <h2 className="text-2xl font-bold mb-4">Landmark Viewer</h2>
-
+            <h2 className="text-2xl font-bold mb-4">Landmark Viewer</h2>{" "}
             {selectedSample ? (
               <div className="space-y-4">
-                {/* Sample Info */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">Sign:</span>{" "}
-                      {selectedSample.sign}
+                {/* Loading State */}
+                {loadingLandmarks && (
+                  <div className="text-center py-8">
+                    <div className="w-8 h-8 mx-auto mb-4 border-4 border-[#009fe3] border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-600">Loading landmarks...</p>
+                  </div>
+                )}
+
+                {/* Error State */}
+                {landmarksError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center text-red-600">
+                      <span className="text-xl mr-2">⚠️</span>
+                      <span className="font-medium">
+                        Error loading landmarks
+                      </span>
                     </div>
-                    <div>
-                      <span className="font-medium">Frames:</span>{" "}
-                      {selectedSample.landmarks.length}
+                    <p className="text-red-500 text-sm mt-1">
+                      {landmarksError}
+                    </p>
+                    <button
+                      onClick={() => handleSampleSelect(selectedSample)}
+                      className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                )}
+
+                {/* Show content only if landmarks are loaded and no error */}
+                {!loadingLandmarks &&
+                  !landmarksError &&
+                  selectedSample.landmarks && (
+                    <>
+                      {/* Sample Info */}
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          {" "}
+                          <div>
+                            <span className="font-medium">Sign:</span>{" "}
+                            {selectedSample.sign}
+                          </div>
+                          <div>
+                            <span className="font-medium">FPS:</span>{" "}
+                            {selectedSample.metadata?.fps || 30}
+                          </div>
+                          <div>
+                            <span className="font-medium">Duration:</span>{" "}
+                            {selectedSample.landmarks?.length || "N/A"} frames
+                          </div>
+                          <div>
+                            <span className="font-medium">ID:</span>{" "}
+                            {selectedSample.id}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Canvas for landmarks */}
+                      <div className="relative">
+                        <canvas
+                          ref={canvasRef}
+                          width={400}
+                          height={300}
+                          className="border border-gray-300 rounded-lg w-full bg-black"
+                        />{" "}
+                        {/* Frame counter overlay */}
+                        <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                          Frame: {currentFrame + 1} /{" "}
+                          {selectedSample.landmarks?.length || 0}
+                        </div>
+                      </div>
+
+                      {/* Controls */}
+                      <div className="flex items-center justify-center space-x-4">
+                        <button
+                          onClick={isPlaying ? stopAnimation : playAnimation}
+                          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                            isPlaying
+                              ? "bg-red-500 hover:bg-red-600 text-white"
+                              : "bg-[#009fe3] hover:bg-[#0084bd] text-white"
+                          }`}
+                        >
+                          {isPlaying ? "⏸️ Stop" : "▶️ Play"}
+                        </button>{" "}
+                        <input
+                          type="range"
+                          min="0"
+                          max={Math.max(
+                            0,
+                            (selectedSample.landmarks?.length || 1) - 1
+                          )}
+                          value={currentFrame}
+                          onChange={(e) => {
+                            const frame = parseInt(e.target.value);
+                            setCurrentFrame(frame);
+                            if (selectedSample.landmarks) {
+                              drawLandmarks(selectedSample.landmarks, frame);
+                            }
+                          }}
+                          disabled={
+                            !selectedSample.landmarks || loadingLandmarks
+                          }
+                          className="flex-1 max-w-xs"
+                        />
+                      </div>
+
+                      {/* Legend */}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                          Pose landmarks
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                          Left hand
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                          Right hand
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                          Face landmarks
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                {/* Show message when no landmarks are loaded and not loading */}
+                {!loadingLandmarks &&
+                  !landmarksError &&
+                  !selectedSample.landmarks && (
+                    <div className="text-center py-16 text-gray-500">
+                      <div className="text-4xl mb-4">📊</div>
+                      <p>
+                        Click "Load Landmarks" to view the landmark animation
+                      </p>
+                      <button
+                        onClick={() => handleSampleSelect(selectedSample)}
+                        className="mt-4 px-4 py-2 bg-[#009fe3] text-white rounded-lg hover:bg-[#0084bd] transition-colors"
+                      >
+                        Load Landmarks
+                      </button>
                     </div>
-                    <div>
-                      <span className="font-medium">FPS:</span>{" "}
-                      {selectedSample.metadata?.fps || 30}
-                    </div>
-                    <div>
-                      <span className="font-medium">Duration:</span>{" "}
-                      {selectedSample.metadata?.duration || "N/A"}s
-                    </div>
-                  </div>
-                </div>
-
-                {/* Canvas for landmarks */}
-                <div className="relative">
-                  <canvas
-                    ref={canvasRef}
-                    width={400}
-                    height={300}
-                    className="border border-gray-300 rounded-lg w-full bg-black"
-                  />
-
-                  {/* Frame counter overlay */}
-                  <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
-                    Frame: {currentFrame + 1} /{" "}
-                    {selectedSample.landmarks.length}
-                  </div>
-                </div>
-
-                {/* Controls */}
-                <div className="flex items-center justify-center space-x-4">
-                  <button
-                    onClick={isPlaying ? stopAnimation : playAnimation}
-                    className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                      isPlaying
-                        ? "bg-red-500 hover:bg-red-600 text-white"
-                        : "bg-[#009fe3] hover:bg-[#0084bd] text-white"
-                    }`}
-                  >
-                    {isPlaying ? "⏸️ Stop" : "▶️ Play"}
-                  </button>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max={selectedSample.landmarks.length - 1}
-                    value={currentFrame}
-                    onChange={(e) => {
-                      const frame = parseInt(e.target.value);
-                      setCurrentFrame(frame);
-                      drawLandmarks(selectedSample.landmarks, frame);
-                    }}
-                    className="flex-1 max-w-xs"
-                  />
-                </div>
-
-                {/* Legend */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                    Pose landmarks
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                    Left hand
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                    Right hand
-                  </div>
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                    Face landmarks
-                  </div>
-                </div>
+                  )}
               </div>
             ) : (
               <div className="text-center py-16 text-gray-500">

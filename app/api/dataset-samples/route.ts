@@ -13,12 +13,12 @@ export async function GET(request: NextRequest) {
     // Fetch sample data with landmarks
     const samplesResponse = await fetch(`${API_BASE_URL}/dataset-samples`);
     if (!samplesResponse.ok) {
+      console.log(samplesResponse);
       throw new Error(
         `Error fetching dataset samples: ${samplesResponse.status}`
       );
     }
     const samplesData = await samplesResponse.json();
-
     // Combine the data
     const combinedData = {
       totalSamples: statsData.totalSamples || 0,

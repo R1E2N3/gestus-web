@@ -303,7 +303,8 @@ export default function GamePage() {
     try {
       const formData = createVideoFormData(
         recordedVideoRef.current,
-        "video.webm"
+        "video.webm",
+        { sign: currentSign }
       );
 
       const response = await fetch("/api/process-video", {
@@ -335,14 +336,14 @@ export default function GamePage() {
         data.predictions.length > 0
       ) {
         setPredictions(data.predictions);
-        const topPrediction = data.predictions[0].sign;
-        if (topPrediction.toLowerCase() === currentSign.toLowerCase()) {
+        const topPrediction = data.predictions[0];
+        if (topPrediction.recognized) {
           setGameResult("correct");
-          setMessage("Correct! Well done!");
+          setMessage(`Correct! Well done! You performed "${topPrediction.sign}" with ${(topPrediction.confidence * 100).toFixed(1)}% confidence.`);
         } else {
           setGameResult("incorrect");
           setMessage(
-            `Not quite! The model detected "${topPrediction}" instead of "${currentSign}".`
+            `Not quite! The model detected "${topPrediction.sign}" with ${(topPrediction.confidence * 100).toFixed(1)}% confidence, but it wasn't recognized as the correct sign "${currentSign}".`
           );
         }
       } else {

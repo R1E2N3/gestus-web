@@ -6,10 +6,18 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const videoFile = formData.get("video") as File | null;
+    const sign = formData.get("sign") as string | null;
 
     if (!videoFile) {
       return NextResponse.json(
         { error: "No video file received." },
+        { status: 400 }
+      );
+    }
+
+    if (!sign) {
+      return NextResponse.json(
+        { error: "No sign parameter received." },
         { status: 400 }
       );
     }
@@ -20,7 +28,9 @@ export async function POST(request: NextRequest) {
       "Size:",
       videoFile.size,
       "Type:",
-      videoFile.type
+      videoFile.type,
+      "Sign:",
+      sign
     );
 
     // Forward the video to the Python backend
@@ -35,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     const backendFormData = new FormData();
     backendFormData.append("video", videoFile, videoFile.name);
+    backendFormData.append("sign", sign);
 
     const backendResponse = await fetch(pythonBackendUrl, {
       method: "POST",
@@ -56,6 +67,23 @@ export async function POST(request: NextRequest) {
 
     const backendData = await backendResponse.json();
 
+    // Transform the new backend response format to match frontend expectations
+    if (backendData.status === 'success' && backendData.result) {
+      const transformedResponse = {
+        status: 'success',
+        predictions: [
+          {
+            sign: backendData.result.sign,
+            confidence: backendData.result.confidence,
+            recognized: backendData.result.recognized,
+            threshold: backendData.result.threshold
+          }
+        ]
+      };
+      return NextResponse.json(transformedResponse);
+    }
+
+    // Return the original response if it doesn't match the expected format
     return NextResponse.json(backendData);
   } catch (error) {
     console.error("Error processing video:", error);
